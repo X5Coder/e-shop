@@ -95,7 +95,7 @@
             position: fixed;
             inset: 0;
             z-index: 99999;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             backdrop-filter: blur(20px);
             display: flex;
             align-items: center;
@@ -117,8 +117,8 @@
             max-width: 400px;
             width: 90%;
             text-align: center;
-            border: 1px solid rgba(255, 0, 0, 0.2);
-            box-shadow: 0 20px 60px rgba(255, 0, 0, 0.3);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(255, 0, 0, 0.4);
             transform: translateY(30px);
             opacity: 0;
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -366,18 +366,62 @@
             background-color: #0066cc;
         }
 
-        /* VIP Badge */
+        /* VIP Badge - معدل */
         .vip-badge {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             color: #000;
             font-weight: bold;
-            padding: 1px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            margin-right: 5px;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
             display: inline-flex;
             align-items: center;
-            gap: 2px;
+            gap: 3px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+            animation: pulse-gold 2s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        /* VIP User Card Style */
+        .vip-user-card {
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-user-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite linear;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        /* VIP Crown Icon */
+        .vip-crown {
+            color: #FFD700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            animation: crown-spin 4s infinite linear;
+        }
+
+        @keyframes crown-spin {
+            0% { transform: rotateY(0); }
+            100% { transform: rotateY(360deg); }
         }
 
         /* Banned User Style */
@@ -401,8 +445,8 @@
         /* Site Blocker */
         .site-blocker {
             pointer-events: none;
-            opacity: 0.3;
-            filter: blur(2px);
+            opacity: 0.2;
+            filter: blur(3px);
             transition: all 0.3s ease;
         }
     </style>
@@ -416,16 +460,16 @@
                 <i class="fas fa-ban text-red-500 text-3xl"></i>
             </div>
             
-            <h2 class="text-2xl font-bold mb-3 text-red-500">حسابك محظور</h2>
-            <p class="text-gray-400 mb-6 leading-relaxed">تم حظر حسابك من استخدام المنصة بسبب مخالفة شروط الاستخدام.</p>
+            <h2 class="text-2xl font-bold mb-3 text-red-500">تم حظر حسابك</h2>
+            <p class="text-gray-400 mb-6 leading-relaxed">"تم حظر حسابك من الموقع"<br>لن تتمكن من استخدام المنصة حتى إلغاء الحظر.</p>
             
             <div class="space-y-3">
-                <button onclick="signOut()" class="btn-press w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                <button onclick="handleBannedLogout()" class="btn-press w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>
                     تسجيل الخروج
                 </button>
                 
-                <p class="text-xs text-gray-500 mt-4">بعد تسجيل الخروج، لن تتمكن من الوصول للموقع حتى إلغاء الحظر</p>
+                <p class="text-xs text-gray-500 mt-4">سيتم تسجيل خروجك من جميع الأجهزة</p>
             </div>
         </div>
     </div>
@@ -463,6 +507,11 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
+            <!-- VIP Status Indicator in Header -->
+            <div id="header-vip-badge" class="vip-badge hidden">
+                <i class="fas fa-crown text-[8px]"></i> VIP
+            </div>
+            
             <!-- Hamburger Menu Icon -->
             <button onclick="toggleSidebar()" class="btn-press settings-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 active:scale-90 transition-all border border-white/10" id="settings-button">
                 <div class="hamburger-icon">
@@ -485,17 +534,32 @@
         <!-- User Section (Only visible when logged in) -->
         <div id="user-info-sidebar" class="hidden mb-4">
             <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
-                <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-blue-600 shadow-xl shadow-blue-600/20">
+                <div class="relative">
+                    <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-blue-600 shadow-xl shadow-blue-600/20">
+                    <!-- VIP Crown on Avatar for VIP Users -->
+                    <div id="avatar-vip-crown" class="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center hidden">
+                        <i class="fas fa-crown text-[8px] text-black"></i>
+                    </div>
+                </div>
                 <div class="text-right flex-1">
                     <div class="flex items-center justify-end gap-1 mb-1">
                         <h3 id="user-name" class="font-bold text-lg"></h3>
                         <span id="vip-badge" class="vip-badge hidden">
-                            <i class="fas fa-star text-[8px]"></i> VIP
+                            <i class="fas fa-crown text-[8px] vip-crown"></i> VIP
                         </span>
                     </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
                     <p id="user-status" class="text-[9px] text-gray-500 mt-2"></p>
                     <p id="user-join-date" class="text-[9px] text-gray-500 mt-1"></p>
+                    <!-- Special Features for VIP Users -->
+                    <div id="vip-features" class="hidden mt-3 pt-2 border-t border-white/5">
+                        <p class="text-[9px] text-yellow-500 font-bold">مزايا VIP:</p>
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            <span class="text-[7px] bg-yellow-500/10 text-yellow-400 px-1 py-0.5 rounded">خصومات حصرية</span>
+                            <span class="text-[7px] bg-yellow-500/10 text-yellow-400 px-1 py-0.5 rounded">دعم فوري</span>
+                            <span class="text-[7px] bg-yellow-500/10 text-yellow-400 px-1 py-0.5 rounded">محتوى متميز</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -745,13 +809,15 @@
                 toggleSidebar();
             }
             
-            // Show banned dialog
-            dialog.classList.add('active');
-            
-            // Disable all interactive elements
-            document.querySelectorAll('button, a, input').forEach(el => {
+            // Disable all interactive elements except banned dialog buttons
+            document.querySelectorAll('button:not(#banned-dialog button), a, input').forEach(el => {
                 el.style.pointerEvents = 'none';
             });
+            
+            // Show banned dialog
+            setTimeout(() => {
+                dialog.classList.add('active');
+            }, 100);
         }
 
         function hideBannedDialog() {
@@ -767,31 +833,16 @@
             dialog.classList.remove('active');
             
             // Re-enable all interactive elements
-            document.querySelectorAll('button, a, input').forEach(el => {
-                el.style.pointerEvents = '';
-            });
+            setTimeout(() => {
+                document.querySelectorAll('button, a, input').forEach(el => {
+                    el.style.pointerEvents = '';
+                });
+            }, 300);
         }
 
-        // Check if user is banned and show dialog
-        function checkUserBanStatus(userId) {
-            if (!userId) return false;
-            
-            const userRef = database.ref('users/' + userId);
-            userRef.once('value')
-                .then((snapshot) => {
-                    if (snapshot.exists()) {
-                        const userData = snapshot.val();
-                        if (userData.banned === true) {
-                            // User is banned - show banned dialog
-                            setTimeout(() => {
-                                showBannedDialog();
-                            }, 100);
-                        }
-                    }
-                })
-                .catch((error) => {
-                    console.error('Error checking ban status:', error);
-                });
+        // Handle logout from banned dialog
+        function handleBannedLogout() {
+            signOut();
         }
 
         // Firebase Authentication Functions
@@ -824,9 +875,12 @@
         }
 
         function signOut() {
+            // First hide banned dialog if shown
+            hideBannedDialog();
+            
+            // Sign out from Firebase
             auth.signOut()
                 .then(() => {
-                    hideBannedDialog();
                     showToast('تم تسجيل الخروج بنجاح!', 'success');
                     toggleSidebar();
                 })
@@ -855,7 +909,7 @@
                             lastLogin: firebase.database.ServerValue.TIMESTAMP,
                             joinDate: firebase.database.ServerValue.TIMESTAMP,
                             banned: false, // Default value
-                            vip: false, // Default value
+                            vip: false, // Default value - سيتم التعديل يدوياً في قاعدة البيانات
                             status: "نشط" // Default status
                         };
                         showSettingsNotification();
@@ -925,7 +979,7 @@
             });
         }
 
-        // Update Sidebar UI with user data
+        // Update Sidebar UI with user data - تم التعديل هنا
         function updateSidebarUI(userData) {
             // Hide login button, show user info and logout button
             document.getElementById('auth-section-sidebar').classList.add('hidden');
@@ -937,16 +991,47 @@
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
             
-            // Show VIP badge if user is VIP
+            // Get VIP badge elements
             const vipBadge = document.getElementById('vip-badge');
+            const headerVipBadge = document.getElementById('header-vip-badge');
+            const avatarVipCrown = document.getElementById('avatar-vip-crown');
+            const vipFeatures = document.getElementById('vip-features');
+            const userCard = document.getElementById('user-card');
+            
+            // التحقق من قيمة vip - **هذا هو التصحيح الرئيسي**
             if (userData.vip === true) {
+                // إظهار علامة VIP في الشريط الجانبي
                 vipBadge.classList.remove('hidden');
+                
+                // إظهار علامة VIP في الهيدر
+                headerVipBadge.classList.remove('hidden');
+                
+                // إظهار التاج على الصورة
+                avatarVipCrown.classList.remove('hidden');
+                
+                // إظهار مزايا VIP
+                vipFeatures.classList.remove('hidden');
+                
+                // إضافة تنسيق خاص لبطاقة المستخدم VIP
+                userCard.classList.add('vip-user-card');
             } else {
+                // إخفاء جميع علامات VIP
                 vipBadge.classList.add('hidden');
+                headerVipBadge.classList.add('hidden');
+                avatarVipCrown.classList.add('hidden');
+                vipFeatures.classList.add('hidden');
+                userCard.classList.remove('vip-user-card');
             }
             
             // Show user status
             document.getElementById('user-status').textContent = `الحالة: ${userData.banned ? 'محظور' : 'نشط'}`;
+            
+            // Apply banned style if user is banned
+            if (userData.banned) {
+                userCard.classList.add('banned-user');
+            } else {
+                userCard.classList.remove('banned-user');
+            }
             
             // Format join date if available
             if (userData.joinDate) {
@@ -973,6 +1058,9 @@
             const authText = document.getElementById('auth-button-text');
             authText.textContent = 'تسجيل الدخول عبر جوجل';
             authButton.disabled = false;
+            
+            // إخفاء علامة VIP من الهيدر
+            document.getElementById('header-vip-badge').classList.add('hidden');
             
             // Remove notification dot from settings icon
             document.getElementById('settings-button').classList.remove('has-notification');
