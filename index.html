@@ -312,38 +312,40 @@
             background-color: #0066cc;
         }
 
-        /* VIP Verification Badge */
+        /* VIP Verification Badge - تحسين الشكل */
         .vip-verified-badge {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             color: #000;
             font-weight: bold;
-            padding: 3px 8px;
-            border-radius: 12px;
-            font-size: 10px;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 11px;
             display: inline-flex;
             align-items: center;
-            gap: 3px;
+            gap: 4px;
             border: 1px solid rgba(255, 215, 0, 0.3);
-            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+            box-shadow: 0 3px 10px rgba(255, 215, 0, 0.3);
             animation: pulse-gold 2s infinite;
         }
 
-        /* Gold Frame for VIP Users */
+        /* Gold Frame for VIP Users - تحسين الشكل */
         .vip-gold-frame {
             position: absolute;
-            inset: -2px;
+            inset: -3px;
             background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700, #FFA500);
             border-radius: 50%;
             z-index: -1;
             animation: rotate-border 3s linear infinite;
-            opacity: 0.7;
+            opacity: 0.8;
         }
 
-        /* VIP User Info */
+        /* VIP User Info - تحسين الشكل */
         .vip-user-info {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 165, 0, 0.02));
-            border-left: 3px solid #FFD700;
-            padding-right: 10px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(255, 165, 0, 0.04));
+            border-right: 3px solid #FFD700;
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin-top: 5px;
         }
 
         /* Animations */
@@ -357,19 +359,82 @@
             50% { transform: scale(1.05); opacity: 0.9; }
         }
 
-        /* Users Count Badge */
+        @keyframes shine-effect {
+            0% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.3); }
+        }
+
+        /* Users Count Badge - تحسين كبير */
         .users-count-badge {
             background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
             color: white;
             font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 11px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             border: 1px solid rgba(0, 102, 204, 0.3);
-            box-shadow: 0 3px 10px rgba(0, 102, 204, 0.3);
+            box-shadow: 0 4px 15px rgba(0, 102, 204, 0.4);
+            position: relative;
+            overflow: hidden;
+            min-width: 80px;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .users-count-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+
+        .users-count-badge:hover::before {
+            transform: translateX(100%);
+        }
+
+        .users-count-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 102, 204, 0.5);
+        }
+
+        .users-count-badge .count-number {
+            font-family: 'Courier New', monospace;
+            font-weight: 900;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .users-count-badge .user-icon {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Live Pulse Effect */
+        .live-pulse {
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background-color: #00ff00;
+            border-radius: 50%;
+            animation: live-pulse 2s infinite;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        @keyframes live-pulse {
+            0% { transform: scale(0.8); opacity: 1; }
+            70% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(0.8); opacity: 1; }
         }
 
         /* Banned User Style */
@@ -470,10 +535,11 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
-            <!-- Users Count Badge بجانب الإعدادات -->
+            <!-- Users Count Badge بجانب الإعدادات - تصميم محسّن -->
             <div id="users-count-badge" class="users-count-badge">
-                <i class="fas fa-user text-xs"></i>
-                <span id="users-count">0</span>
+                <i class="fas fa-user user-icon"></i>
+                <span id="users-count" class="count-number">0</span>
+                <div class="live-pulse"></div>
             </div>
             
             <!-- Hamburger Menu Icon -->
@@ -497,7 +563,7 @@
 
         <!-- User Section (Only visible when logged in) -->
         <div id="user-info-sidebar" class="hidden mb-4">
-            <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+            <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10 relative">
                 <div class="relative">
                     <div id="avatar-container" class="relative">
                         <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-white/20 shadow-xl">
@@ -511,17 +577,17 @@
                         <!-- VIP Verification Badge -->
                         <div id="vip-verified-badge" class="vip-verified-badge hidden">
                             <i class="fas fa-check-circle text-xs"></i>
-                            <span>VIP موثق</span>
+                            <span>VIP</span>
                         </div>
                     </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
                     <div id="vip-user-info" class="vip-user-info hidden">
-                        <div class="flex items-center gap-2 mt-2">
-                            <span class="text-xs text-yellow-500 font-bold">عضوية مميزة</span>
+                        <div class="flex items-center gap-2 justify-end">
+                            <span class="text-xs text-yellow-500 font-bold">Premium Member</span>
                             <i class="fas fa-crown text-yellow-500 text-xs"></i>
                         </div>
                     </div>
-                    <p id="user-status" class="text-[9px] text-gray-500 mt-2">الحالة: نشط</p>
+                    <p id="user-status" class="text-[9px] text-gray-500 mt-2">Status: Active</p>
                     <p id="user-join-date" class="text-[9px] text-gray-500 mt-1"></p>
                 </div>
             </div>
@@ -531,7 +597,7 @@
         <div id="auth-section-sidebar" class="mb-4">
             <button onclick="signInWithGoogle()" class="btn-press w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-600/20" id="auth-button">
                 <i class="fab fa-google text-lg"></i>
-                <span id="auth-button-text">تسجيل الدخول عبر جوجل</span>
+                <span id="auth-button-text">Sign in with Google</span>
             </button>
         </div>
 
@@ -539,21 +605,21 @@
         <div id="logout-section-sidebar" class="hidden mb-4">
             <button onclick="signOut()" class="btn-press w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20">
                 <i class="fas fa-sign-out-alt text-lg"></i>
-                تسجيل الخروج
+                Sign Out
             </button>
         </div>
 
         <!-- Contact Us Section -->
         <div class="mt-2">
-            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-2">تواصل معنا</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-2">Contact Us</p>
             <div class="compact-social-row">
-                <a href="mailto:contact@eshop-pro.com" class="compact-social-icon bg-white/5 hover:bg-blue-600/20 border border-white/5 text-blue-400" title="البريد الإلكتروني">
+                <a href="mailto:contact@eshop-pro.com" class="compact-social-icon bg-white/5 hover:bg-blue-600/20 border border-white/5 text-blue-400" title="Email">
                     <i class="fas fa-envelope"></i>
                 </a>
-                <a href="https://wa.me/1234567890" target="_blank" class="compact-social-icon bg-white/5 hover:bg-green-600/20 border border-white/5 text-green-400" title="واتساب">
+                <a href="https://wa.me/1234567890" target="_blank" class="compact-social-icon bg-white/5 hover:bg-green-600/20 border border-white/5 text-green-400" title="WhatsApp">
                     <i class="fab fa-whatsapp"></i>
                 </a>
-                <a href="https://t.me/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-blue-500/20 border border-white/5 text-blue-400" title="تليجرام">
+                <a href="https://t.me/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-blue-500/20 border border-white/5 text-blue-400" title="Telegram">
                     <i class="fab fa-telegram"></i>
                 </a>
             </div>
@@ -561,15 +627,15 @@
 
         <!-- Social Media Section -->
         <div class="mt-4">
-            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-2">وسائل التواصل الاجتماعي</p>
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-2">Social Media</p>
             <div class="compact-social-row">
-                <a href="https://youtube.com/eshop-pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-red-600/20 border border-white/5 text-red-500" title="يوتيوب">
+                <a href="https://youtube.com/eshop-pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-red-600/20 border border-white/5 text-red-500" title="YouTube">
                     <i class="fab fa-youtube"></i>
                 </a>
-                <a href="https://tiktok.com/@eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-white/20 border border-white/5 text-white" title="تيك توك">
+                <a href="https://tiktok.com/@eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-white/20 border border-white/5 text-white" title="TikTok">
                     <i class="fab fa-tiktok"></i>
                 </a>
-                <a href="https://instagram.com/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-pink-600/20 border border-white/5 text-pink-500" title="انستجرام">
+                <a href="https://instagram.com/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-pink-600/20 border border-white/5 text-pink-500" title="Instagram">
                     <i class="fab fa-instagram"></i>
                 </a>
             </div>
@@ -578,7 +644,7 @@
         <!-- App Info -->
         <div class="mt-6 pt-4 border-t border-white/10 text-center">
             <p class="text-[10px] text-gray-500">E-Shop Pro v1.0.0</p>
-            <p class="text-[9px] text-gray-600 mt-1">© 2024 جميع الحقوق محفوظة</p>
+            <p class="text-[9px] text-gray-600 mt-1">© 2024 All rights reserved</p>
         </div>
     </div>
 
@@ -587,8 +653,8 @@
         
         <!-- Hero Section -->
         <section class="scroll-reveal text-center mb-10">
-            <h1 class="text-3xl font-extrabold mb-3 leading-tight">بوابتك لكل ما هو <span class="text-blue-600">رقمي</span></h1>
-            <p class="text-gray-400 text-base">منصة متكاملة تجمع لك الكتب، البرمجة، والتصميم في مكان واحد.</p>
+            <h1 class="text-3xl font-extrabold mb-3 leading-tight">Your Gateway to Everything <span class="text-blue-600">Digital</span></h1>
+            <p class="text-gray-400 text-base">An integrated platform that brings you books, programming, and design in one place.</p>
         </section>
 
         <!-- Categories -->
@@ -600,11 +666,11 @@
                     <div class="bg-blue-600 w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-lg shadow-blue-600/30">
                         <i class="fas fa-book-open text-white"></i>
                     </div>
-                    <span class="text-xs font-bold px-2 py-1 bg-blue-600/10 text-blue-500 rounded-full">248 منتج</span>
+                    <span class="text-xs font-bold px-2 py-1 bg-blue-600/10 text-blue-500 rounded-full">248 Products</span>
                 </div>
                 <h3 class="text-xl font-bold mb-2">E-BOOK</h3>
-                <p class="text-sm text-gray-500 mb-3 leading-relaxed">كتب إلكترونية في مختلف المجالات تنمي الخبرة وتقدم حلولاً عملية ونظرية.</p>
-                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">تصفح الكتب</button>
+                <p class="text-sm text-gray-500 mb-3 leading-relaxed">E-books in various fields that develop expertise and provide practical and theoretical solutions.</p>
+                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">Browse Books</button>
             </div>
 
             <!-- Programming -->
@@ -614,11 +680,11 @@
                     <div class="bg-purple-600 w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-lg shadow-purple-600/30">
                         <i class="fas fa-code text-white"></i>
                     </div>
-                    <span class="text-xs font-bold px-2 py-1 bg-purple-600/10 text-purple-500 rounded-full">156 مشروع</span>
+                    <span class="text-xs font-bold px-2 py-1 bg-purple-600/10 text-purple-500 rounded-full">156 Projects</span>
                 </div>
                 <h3 class="text-xl font-bold mb-2">PROGRAMMING</h3>
-                <p class="text-sm text-gray-500 mb-3 leading-relaxed">مشاريع متنوعة في جميع لغات البرمجة وحلول برمجية جاهزة للاستخدام.</p>
-                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">رؤية المشاريع</button>
+                <p class="text-sm text-gray-500 mb-3 leading-relaxed">Diverse projects in all programming languages and ready-to-use programming solutions.</p>
+                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">View Projects</button>
             </div>
 
             <!-- Design -->
@@ -628,11 +694,11 @@
                     <div class="bg-red-600 w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-lg shadow-red-600/30">
                         <i class="fas fa-paint-brush text-white"></i>
                     </div>
-                    <span class="text-xs font-bold px-2 py-1 bg-red-600/10 text-red-500 rounded-full">892 تصميم</span>
+                    <span class="text-xs font-bold px-2 py-1 bg-red-600/10 text-red-500 rounded-full">892 Designs</span>
                 </div>
                 <h3 class="text-xl font-bold mb-2">IMAGE DESIGN</h3>
-                <p class="text-sm text-gray-500 mb-3 leading-relaxed">تصاميم احترافية جاهزة وإمكانية طلب هوية بصرية كاملة لمشروعك.</p>
-                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">استعراض التصاميم</button>
+                <p class="text-sm text-gray-500 mb-3 leading-relaxed">Professional ready-made designs and the possibility to request a complete visual identity for your project.</p>
+                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">Browse Designs</button>
             </div>
 
             <!-- Other -->
@@ -642,11 +708,11 @@
                     <div class="bg-green-600 w-10 h-10 rounded-xl flex items-center justify-center text-lg shadow-lg shadow-green-600/30">
                         <i class="fas fa-cubes text-white"></i>
                     </div>
-                    <span class="text-xs font-bold px-2 py-1 bg-green-600/10 text-green-500 rounded-full">324 خدمة</span>
+                    <span class="text-xs font-bold px-2 py-1 bg-green-600/10 text-green-500 rounded-full">324 Services</span>
                 </div>
                 <h3 class="text-xl font-bold mb-2">OTHER SERVICES</h3>
-                <p class="text-sm text-gray-500 mb-3 leading-relaxed">خدمات هندسة عكسية، سكربتات، وسيرفرات مخصصة لاحتياجاتك التقنية.</p>
-                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">اكتشف المزيد</button>
+                <p class="text-sm text-gray-500 mb-3 leading-relaxed">Reverse engineering services, scripts, and custom servers for your technical needs.</p>
+                <button class="btn-press w-full py-3 rounded-xl bg-white/5 font-bold hover:bg-white/10 transition-colors text-sm">Discover More</button>
             </div>
         </div>
 
@@ -658,8 +724,8 @@
                 <img src="https://ui-avatars.com/api/?name=C&background=00cc66&color=fff" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">+50K</div>
             </div>
-            <h4 class="text-lg font-bold mb-2">انضم إلى أكثر من 50,000 مستخدم حول العالم</h4>
-            <p class="text-xs text-gray-500">نحن نقدم أفضل الخدمات الرقمية بأعلى معايير الأمان والجودة العالمية</p>
+            <h4 class="text-lg font-bold mb-2">Join over 50,000 users worldwide</h4>
+            <p class="text-xs text-gray-500">We provide the best digital services with the highest standards of security and global quality</p>
         </div>
     </main>
 
@@ -786,8 +852,8 @@
         function updateUsersCountBadge() {
             const usersCountSpan = document.getElementById('users-count');
             
-            // تحديث العداد في الهيدر بالعدد الحقيقي مع تنسيق
-            usersCountSpan.textContent = realUsersCount.toLocaleString('ar-SA');
+            // تحديث العداد في الهيدر بالعدد الحقيقي بالانجليزية
+            usersCountSpan.textContent = realUsersCount.toLocaleString('en-US');
             
             // تأثير بسيط عند التغيير
             usersCountSpan.classList.add('scale-110');
@@ -855,7 +921,7 @@
             // Show loading state
             const authButton = document.getElementById('auth-button');
             const authText = document.getElementById('auth-button-text');
-            authText.textContent = 'جاري تسجيل الدخول...';
+            authText.textContent = 'Signing in...';
             authButton.disabled = true;
             
             auth.signInWithPopup(provider)
@@ -867,10 +933,10 @@
                 })
                 .catch((error) => {
                     console.error('Error signing in:', error);
-                    showToast('حدث خطأ في تسجيل الدخول', 'error');
+                    showToast('Error signing in', 'error');
                     
                     // Reset button state
-                    authText.textContent = 'تسجيل الدخول عبر جوجل';
+                    authText.textContent = 'Sign in with Google';
                     authButton.disabled = false;
                 });
         }
@@ -882,12 +948,12 @@
             // Sign out from Firebase
             auth.signOut()
                 .then(() => {
-                    showToast('تم تسجيل الخروج بنجاح!', 'success');
+                    showToast('Signed out successfully!', 'success');
                     toggleSidebar();
                 })
                 .catch((error) => {
                     console.error('Error signing out:', error);
-                    showToast('حدث خطأ في تسجيل الخروج', 'error');
+                    showToast('Error signing out', 'error');
                 });
         }
 
@@ -911,7 +977,7 @@
                             joinDate: firebase.database.ServerValue.TIMESTAMP,
                             banned: false,
                             vip: false, // Default is false
-                            status: "نشط"
+                            status: "Active"
                         };
                         
                         // For testing: إذا كان اسم المستخدم KIMO، اجعل vip = true
@@ -921,7 +987,7 @@
                         }
                         
                         showSettingsNotification();
-                        showToast('مرحباً بك في E-Shop Pro!', 'success');
+                        showToast('Welcome to E-Shop Pro!', 'success');
                     } else {
                         // Existing user - update only necessary fields
                         const existingData = snapshot.val();
@@ -938,7 +1004,7 @@
                             return;
                         }
                         
-                        showToast('مرحباً بعودتك!', 'success');
+                        showToast('Welcome back!', 'success');
                     }
                     
                     // Update user data
@@ -1009,14 +1075,16 @@
             avatarGoldFrame.classList.add('hidden');
             vipUserInfo.classList.add('hidden');
             
-            // Show VIP indicators only if user is VIP
+            // Show VIP indicators only if user is VIP (vip: true)
             if (userData.vip === true) {
                 vipBadge.classList.remove('hidden');
                 avatarGoldFrame.classList.remove('hidden');
                 vipUserInfo.classList.remove('hidden');
             }
+            // إذا كانت vip: false لا تظهر أي شيء (مخفي بالفعل)
             
             // Apply banned style if user is banned
+            const userCard = document.getElementById('user-card');
             if (userData.banned === true) {
                 userCard.classList.add('banned-user');
                 // Hide VIP indicators if banned
@@ -1032,11 +1100,10 @@
                 const joinDate = new Date(userData.joinDate);
                 const options = { 
                     year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    calendar: 'gregory'
+                    month: 'short', 
+                    day: 'numeric'
                 };
-                document.getElementById('user-join-date').textContent = `عضو منذ: ${joinDate.toLocaleDateString('ar-SA', options)}`;
+                document.getElementById('user-join-date').textContent = `Member since: ${joinDate.toLocaleDateString('en-US', options)}`;
             }
         }
 
@@ -1050,7 +1117,7 @@
             // Reset auth button
             const authButton = document.getElementById('auth-button');
             const authText = document.getElementById('auth-button-text');
-            authText.textContent = 'تسجيل الدخول عبر جوجل';
+            authText.textContent = 'Sign in with Google';
             authButton.disabled = false;
             
             // Remove notification dot from settings icon
