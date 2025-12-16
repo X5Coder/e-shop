@@ -303,6 +303,28 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* Settings Icon for Header */
+        .settings-icon {
+            position: relative;
+        }
+
+        .settings-icon::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 6px;
+            height: 6px;
+            background: #0066cc;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .settings-icon.has-notification::after {
+            opacity: 1;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -340,80 +362,85 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
-            <div id="user-info-header" class="hidden items-center gap-2">
-                <img id="user-avatar-header" class="w-8 h-8 rounded-full border-2 border-blue-600">
-                <span id="user-name-header" class="text-xs font-bold"></span>
-            </div>
-            <button onclick="toggleSidebar()" class="btn-press w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 active:scale-90 transition-all border border-white/10">
-                <i class="fas fa-bars-staggered text-sm"></i>
+            <!-- Settings Icon Only (No User Info) -->
+            <button onclick="toggleSidebar()" class="btn-press settings-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 active:scale-90 transition-all border border-white/10" id="settings-button">
+                <i class="fas fa-user-gear text-sm"></i>
             </button>
         </div>
     </header>
 
-    <!-- Sidebar (Drawer) -->
+    <!-- Sidebar (Drawer) - Settings Menu -->
     <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[999] hidden transition-all duration-500"></div>
     <div id="sidebar" class="bg-zinc-950 text-white p-4 flex flex-col gap-4 shadow-2xl border-l border-white/10">
         <div class="flex justify-between items-center mb-1">
-            <h2 class="text-xl font-black tracking-tight text-blue-500">القائمة</h2>
+            <h2 class="text-xl font-black tracking-tight text-blue-500">الإعدادات</h2>
             <button onclick="toggleSidebar()" class="btn-press w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"><i class="fas fa-xmark text-sm"></i></button>
         </div>
 
-        <!-- Auth in Sidebar -->
-        <div id="auth-section-sidebar" class="mb-3">
-            <button onclick="signInWithGoogle()" class="btn-press w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-600/20 text-sm" id="auth-button">
+        <!-- User Section (Only visible when logged in) -->
+        <div id="user-info-sidebar" class="hidden mb-4">
+            <div class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+                <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-blue-600 shadow-xl shadow-blue-600/20">
+                <div class="text-right flex-1">
+                    <h3 id="user-name" class="font-bold text-lg"></h3>
+                    <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
+                    <p id="user-join-date" class="text-[9px] text-gray-500 mt-2"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Auth Section -->
+        <div id="auth-section-sidebar" class="mb-4">
+            <button onclick="signInWithGoogle()" class="btn-press w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-600/20" id="auth-button">
                 <i class="fab fa-google text-lg"></i>
                 <span id="auth-button-text">تسجيل الدخول عبر جوجل</span>
             </button>
         </div>
 
-        <!-- User Info Section (Hidden by default) -->
-        <div id="user-info-sidebar" class="hidden mb-3">
-            <div class="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10 animate-pulse-slow">
-                <img id="user-avatar" class="w-12 h-12 rounded-full border-2 border-blue-600 shadow-xl shadow-blue-600/20">
-                <div class="text-right flex-1">
-                    <h3 id="user-name" class="font-bold text-base"></h3>
-                    <p id="user-email" class="text-[9px] text-blue-400"></p>
-                    <p id="user-join-date" class="text-[8px] text-gray-500 mt-1"></p>
-                </div>
-            </div>
-            <button onclick="signOut()" class="btn-press w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20 text-sm mt-2">
+        <!-- Logout Button (Only visible when logged in) -->
+        <div id="logout-section-sidebar" class="hidden mb-4">
+            <button onclick="signOut()" class="btn-press w-full bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-red-600/20">
                 <i class="fas fa-sign-out-alt text-lg"></i>
                 تسجيل الخروج
             </button>
         </div>
 
-        <div class="flex flex-col gap-2">
-            <!-- Contact Us Section -->
-            <div class="mt-3">
-                <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-2 text-center">تواصل معنا</p>
-                <div class="compact-social-row">
-                    <a href="mailto:contact@eshop-pro.com" class="compact-social-icon bg-white/5 hover:bg-blue-600/20 border border-white/5 text-blue-400" title="البريد الإلكتروني">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                    <a href="https://wa.me/1234567890" target="_blank" class="compact-social-icon bg-white/5 hover:bg-green-600/20 border border-white/5 text-green-400" title="واتساب">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
-                    <a href="https://t.me/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-blue-500/20 border border-white/5 text-blue-400" title="تليجرام">
-                        <i class="fab fa-telegram"></i>
-                    </a>
-                </div>
+        <!-- Contact Us Section -->
+        <div class="mt-2">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-2">تواصل معنا</p>
+            <div class="compact-social-row">
+                <a href="mailto:contact@eshop-pro.com" class="compact-social-icon bg-white/5 hover:bg-blue-600/20 border border-white/5 text-blue-400" title="البريد الإلكتروني">
+                    <i class="fas fa-envelope"></i>
+                </a>
+                <a href="https://wa.me/1234567890" target="_blank" class="compact-social-icon bg-white/5 hover:bg-green-600/20 border border-white/5 text-green-400" title="واتساب">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="https://t.me/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-blue-500/20 border border-white/5 text-blue-400" title="تليجرام">
+                    <i class="fab fa-telegram"></i>
+                </a>
             </div>
+        </div>
 
-            <!-- Social Media Section -->
-            <div class="mt-4">
-                <p class="text-[9px] font-bold text-gray-500 uppercase tracking-widest mb-2 px-2 text-center">وسائل التواصل الاجتماعي</p>
-                <div class="compact-social-row">
-                    <a href="https://youtube.com/eshop-pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-red-600/20 border border-white/5 text-red-500" title="يوتيوب">
-                        <i class="fab fa-youtube"></i>
-                    </a>
-                    <a href="https://tiktok.com/@eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-white/20 border border-white/5 text-white" title="تيك توك">
-                        <i class="fab fa-tiktok"></i>
-                    </a>
-                    <a href="https://instagram.com/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-pink-600/20 border border-white/5 text-pink-500" title="انستجرام">
-                        <i class="fab fa-instagram"></i>
-                    </a>
-                </div>
+        <!-- Social Media Section -->
+        <div class="mt-4">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 px-2">وسائل التواصل الاجتماعي</p>
+            <div class="compact-social-row">
+                <a href="https://youtube.com/eshop-pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-red-600/20 border border-white/5 text-red-500" title="يوتيوب">
+                    <i class="fab fa-youtube"></i>
+                </a>
+                <a href="https://tiktok.com/@eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-white/20 border border-white/5 text-white" title="تيك توك">
+                    <i class="fab fa-tiktok"></i>
+                </a>
+                <a href="https://instagram.com/eshop_pro" target="_blank" class="compact-social-icon bg-white/5 hover:bg-pink-600/20 border border-white/5 text-pink-500" title="انستجرام">
+                    <i class="fab fa-instagram"></i>
+                </a>
             </div>
+        </div>
+
+        <!-- App Info -->
+        <div class="mt-6 pt-4 border-t border-white/10 text-center">
+            <p class="text-[10px] text-gray-500">E-Shop Pro v1.0.0</p>
+            <p class="text-[9px] text-gray-600 mt-1">© 2024 جميع الحقوق محفوظة</p>
         </div>
     </div>
 
@@ -654,6 +681,7 @@
                     if (!snapshot.exists()) {
                         // New user - set join date
                         userData.joinDate = firebase.database.ServerValue.TIMESTAMP;
+                        showSettingsNotification();
                     } else {
                         // Existing user - keep original join date
                         const existingData = snapshot.val();
@@ -664,7 +692,7 @@
                     userRef.set(userData)
                         .then(() => {
                             console.log('User data saved successfully');
-                            updateUserUI(userData);
+                            updateSidebarUI(userData);
                         })
                         .catch((error) => {
                             console.error('Error saving user data:', error);
@@ -675,7 +703,7 @@
                 });
         }
 
-        // Update UI based on authentication state
+        // Update Sidebar UI based on authentication state
         function checkAuthState() {
             auth.onAuthStateChanged((user) => {
                 if (user) {
@@ -688,11 +716,11 @@
                                 email: user.email,
                                 photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066cc&color=fff`
                             };
-                            updateUserUI(userData);
+                            updateSidebarUI(userData);
                         })
                         .catch((error) => {
                             console.error('Error getting user data:', error);
-                            updateUserUI({
+                            updateSidebarUI({
                                 displayName: user.displayName || `User_${Math.floor(Math.random() * 10000)}`,
                                 email: user.email,
                                 photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066cc&color=fff`
@@ -700,16 +728,17 @@
                         });
                 } else {
                     // User is signed out
-                    resetUserUI();
+                    resetSidebarUI();
                 }
             });
         }
 
-        // Update UI with user data
-        function updateUserUI(userData) {
-            // Update sidebar
+        // Update Sidebar UI with user data
+        function updateSidebarUI(userData) {
+            // Hide login button, show user info and logout button
             document.getElementById('auth-section-sidebar').classList.add('hidden');
             document.getElementById('user-info-sidebar').classList.remove('hidden');
+            document.getElementById('logout-section-sidebar').classList.remove('hidden');
             
             // Set user data in sidebar
             document.getElementById('user-name').textContent = userData.displayName;
@@ -719,20 +748,22 @@
             // Format join date if available
             if (userData.joinDate) {
                 const joinDate = new Date(userData.joinDate);
-                document.getElementById('user-join-date').textContent = `انضم في: ${joinDate.toLocaleDateString('ar-SA')}`;
+                const options = { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    calendar: 'gregory'
+                };
+                document.getElementById('user-join-date').textContent = `عضو منذ: ${joinDate.toLocaleDateString('ar-SA', options)}`;
             }
-            
-            // Update header
-            document.getElementById('user-info-header').classList.remove('hidden');
-            document.getElementById('user-name-header').textContent = userData.displayName;
-            document.getElementById('user-avatar-header').src = userData.photoURL;
         }
 
-        // Reset UI when user logs out
-        function resetUserUI() {
-            // Reset sidebar
+        // Reset Sidebar UI when user logs out
+        function resetSidebarUI() {
+            // Show login button, hide user info and logout button
             document.getElementById('auth-section-sidebar').classList.remove('hidden');
             document.getElementById('user-info-sidebar').classList.add('hidden');
+            document.getElementById('logout-section-sidebar').classList.add('hidden');
             
             // Reset auth button
             const authButton = document.getElementById('auth-button');
@@ -740,8 +771,17 @@
             authText.textContent = 'تسجيل الدخول عبر جوجل';
             authButton.disabled = false;
             
-            // Reset header
-            document.getElementById('user-info-header').classList.add('hidden');
+            // Remove notification dot from settings icon
+            document.getElementById('settings-button').classList.remove('has-notification');
+        }
+
+        // Show notification dot on settings icon for new users
+        function showSettingsNotification() {
+            document.getElementById('settings-button').classList.add('has-notification');
+            // Remove notification after 5 seconds
+            setTimeout(() => {
+                document.getElementById('settings-button').classList.remove('has-notification');
+            }, 5000);
         }
 
         // Show toast notification
@@ -823,6 +863,15 @@
                 icon.addEventListener('mouseleave', function() {
                     this.style.transform = 'translateY(0) scale(1)';
                 });
+            });
+            
+            // Add animation for settings button
+            const settingsBtn = document.getElementById('settings-button');
+            settingsBtn.addEventListener('mouseenter', function() {
+                this.style.transform = 'rotate(15deg)';
+            });
+            settingsBtn.addEventListener('mouseleave', function() {
+                this.style.transform = 'rotate(0deg)';
             });
         });
     </script>
