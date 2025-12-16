@@ -304,26 +304,59 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Settings Icon for Header */
-        .settings-icon {
+        /* Hamburger Menu Icon */
+        .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 20px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .hamburger-icon span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-icon:hover span {
+            background-color: #0066cc;
+        }
+
+        /* VIP Badge */
+        .vip-badge {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 9px;
+            margin-right: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        /* Banned User Style */
+        .banned-user {
+            opacity: 0.5;
             position: relative;
         }
 
-        .settings-icon::after {
-            content: '';
+        .banned-user::after {
+            content: "محظور";
             position: absolute;
             top: 0;
             right: 0;
-            width: 6px;
-            height: 6px;
-            background: #0066cc;
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .settings-icon.has-notification::after {
-            opacity: 1;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            font-size: 8px;
+            padding: 1px 4px;
+            border-radius: 3px;
         }
     </style>
 </head>
@@ -362,9 +395,13 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
-            <!-- Settings Icon Only (No User Info) -->
+            <!-- Hamburger Menu Icon -->
             <button onclick="toggleSidebar()" class="btn-press settings-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 active:scale-90 transition-all border border-white/10" id="settings-button">
-                <i class="fas fa-user-gear text-sm"></i>
+                <div class="hamburger-icon">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </button>
         </div>
     </header>
@@ -379,12 +416,18 @@
 
         <!-- User Section (Only visible when logged in) -->
         <div id="user-info-sidebar" class="hidden mb-4">
-            <div class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+            <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
                 <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-blue-600 shadow-xl shadow-blue-600/20">
                 <div class="text-right flex-1">
-                    <h3 id="user-name" class="font-bold text-lg"></h3>
+                    <div class="flex items-center justify-end gap-1 mb-1">
+                        <h3 id="user-name" class="font-bold text-lg"></h3>
+                        <span id="vip-badge" class="vip-badge hidden">
+                            <i class="fas fa-star text-[8px]"></i> VIP
+                        </span>
+                    </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
-                    <p id="user-join-date" class="text-[9px] text-gray-500 mt-2"></p>
+                    <p id="user-status" class="text-[9px] text-gray-500 mt-2"></p>
+                    <p id="user-join-date" class="text-[9px] text-gray-500 mt-1"></p>
                 </div>
             </div>
         </div>
@@ -637,7 +680,6 @@
                     // User signed in successfully
                     const user = result.user;
                     saveUserData(user);
-                    showToast('تم تسجيل الدخول بنجاح!', 'success');
                     toggleSidebar();
                 })
                 .catch((error) => {
@@ -666,26 +708,36 @@
         function saveUserData(user) {
             const userRef = database.ref('users/' + user.uid);
             
-            const userData = {
-                uid: user.uid,
-                displayName: user.displayName || `User_${Math.floor(Math.random() * 10000)}`,
-                email: user.email,
-                photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066cc&color=fff`,
-                lastLogin: firebase.database.ServerValue.TIMESTAMP,
-                joinDate: firebase.database.ServerValue.TIMESTAMP
-            };
-            
             // Check if user exists first
             userRef.once('value')
                 .then((snapshot) => {
+                    let userData;
+                    
                     if (!snapshot.exists()) {
-                        // New user - set join date
-                        userData.joinDate = firebase.database.ServerValue.TIMESTAMP;
+                        // New user - set initial data
+                        userData = {
+                            uid: user.uid,
+                            displayName: user.displayName || `User_${Math.floor(Math.random() * 10000)}`,
+                            email: user.email,
+                            photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066cc&color=fff`,
+                            lastLogin: firebase.database.ServerValue.TIMESTAMP,
+                            joinDate: firebase.database.ServerValue.TIMESTAMP,
+                            banned: false, // Default value
+                            vip: false, // Default value
+                            status: "نشط" // Default status
+                        };
                         showSettingsNotification();
+                        showToast('مرحباً بك في E-Shop Pro!', 'success');
                     } else {
-                        // Existing user - keep original join date
+                        // Existing user - update only necessary fields
                         const existingData = snapshot.val();
-                        userData.joinDate = existingData.joinDate || firebase.database.ServerValue.TIMESTAMP;
+                        userData = {
+                            ...existingData,
+                            lastLogin: firebase.database.ServerValue.TIMESTAMP,
+                            displayName: user.displayName || existingData.displayName,
+                            photoURL: user.photoURL || existingData.photoURL
+                        };
+                        showToast('مرحباً بعودتك!', 'success');
                     }
                     
                     // Update user data
@@ -693,6 +745,12 @@
                         .then(() => {
                             console.log('User data saved successfully');
                             updateSidebarUI(userData);
+                            
+                            // Check if user is banned
+                            if (userData.banned) {
+                                showToast('حسابك محظور!', 'error');
+                                signOut(); // Auto sign out if banned
+                            }
                         })
                         .catch((error) => {
                             console.error('Error saving user data:', error);
@@ -711,20 +769,22 @@
                     const userRef = database.ref('users/' + user.uid);
                     userRef.once('value')
                         .then((snapshot) => {
-                            const userData = snapshot.val() || {
-                                displayName: user.displayName || `User_${Math.floor(Math.random() * 10000)}`,
-                                email: user.email,
-                                photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066cc&color=fff`
-                            };
-                            updateSidebarUI(userData);
+                            if (snapshot.exists()) {
+                                const userData = snapshot.val();
+                                // Check if user is banned
+                                if (userData.banned) {
+                                    showToast('حسابك محظور!', 'error');
+                                    signOut();
+                                    return;
+                                }
+                                updateSidebarUI(userData);
+                            } else {
+                                // User exists in auth but not in database
+                                saveUserData(user);
+                            }
                         })
                         .catch((error) => {
                             console.error('Error getting user data:', error);
-                            updateSidebarUI({
-                                displayName: user.displayName || `User_${Math.floor(Math.random() * 10000)}`,
-                                email: user.email,
-                                photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066cc&color=fff`
-                            });
                         });
                 } else {
                     // User is signed out
@@ -744,6 +804,25 @@
             document.getElementById('user-name').textContent = userData.displayName;
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
+            
+            // Show VIP badge if user is VIP
+            const vipBadge = document.getElementById('vip-badge');
+            if (userData.vip === true) {
+                vipBadge.classList.remove('hidden');
+            } else {
+                vipBadge.classList.add('hidden');
+            }
+            
+            // Show user status
+            document.getElementById('user-status').textContent = `الحالة: ${userData.banned ? 'محظور' : 'نشط'}`;
+            
+            // Apply banned style if user is banned
+            const userCard = document.getElementById('user-card');
+            if (userData.banned) {
+                userCard.classList.add('banned-user');
+            } else {
+                userCard.classList.remove('banned-user');
+            }
             
             // Format join date if available
             if (userData.joinDate) {
@@ -865,13 +944,20 @@
                 });
             });
             
-            // Add animation for settings button
-            const settingsBtn = document.getElementById('settings-button');
-            settingsBtn.addEventListener('mouseenter', function() {
-                this.style.transform = 'rotate(15deg)';
+            // Add animation for hamburger menu
+            const hamburgerBtn = document.getElementById('settings-button');
+            const hamburgerSpans = hamburgerBtn.querySelectorAll('.hamburger-icon span');
+            
+            hamburgerBtn.addEventListener('mouseenter', function() {
+                hamburgerSpans.forEach((span, index) => {
+                    span.style.transform = `translateX(${index % 2 === 0 ? '2px' : '-2px'})`;
+                });
             });
-            settingsBtn.addEventListener('mouseleave', function() {
-                this.style.transform = 'rotate(0deg)';
+            
+            hamburgerBtn.addEventListener('mouseleave', function() {
+                hamburgerSpans.forEach(span => {
+                    span.style.transform = 'translateX(0)';
+                });
             });
         });
     </script>
