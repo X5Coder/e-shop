@@ -312,6 +312,51 @@
             background-color: #0066cc;
         }
 
+        /* VIP Verification Badge */
+        .vip-verified-badge {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+            animation: pulse-gold 2s infinite;
+        }
+
+        /* Gold Frame for VIP Users */
+        .vip-gold-frame {
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700, #FFA500);
+            border-radius: 50%;
+            z-index: -1;
+            animation: rotate-border 3s linear infinite;
+            opacity: 0.7;
+        }
+
+        /* VIP User Info */
+        .vip-user-info {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 165, 0, 0.02));
+            border-left: 3px solid #FFD700;
+            padding-right: 10px;
+        }
+
+        /* Animations */
+        @keyframes rotate-border {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
         /* Users Count Badge */
         .users-count-badge {
             background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
@@ -428,7 +473,7 @@
             <!-- Users Count Badge بجانب الإعدادات -->
             <div id="users-count-badge" class="users-count-badge">
                 <i class="fas fa-user text-xs"></i>
-                <span id="users-count">50,000</span>
+                <span id="users-count">0</span>
             </div>
             
             <!-- Hamburger Menu Icon -->
@@ -456,13 +501,26 @@
                 <div class="relative">
                     <div id="avatar-container" class="relative">
                         <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-white/20 shadow-xl">
+                        <!-- Gold Frame Overlay for VIP -->
+                        <div id="avatar-gold-frame" class="vip-gold-frame hidden"></div>
                     </div>
                 </div>
                 <div class="text-right flex-1">
                     <div class="flex items-center justify-end gap-2 mb-1">
                         <h3 id="user-name" class="font-bold text-lg"></h3>
+                        <!-- VIP Verification Badge -->
+                        <div id="vip-verified-badge" class="vip-verified-badge hidden">
+                            <i class="fas fa-check-circle text-xs"></i>
+                            <span>VIP موثق</span>
+                        </div>
                     </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
+                    <div id="vip-user-info" class="vip-user-info hidden">
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-xs text-yellow-500 font-bold">عضوية مميزة</span>
+                            <i class="fas fa-crown text-yellow-500 text-xs"></i>
+                        </div>
+                    </div>
                     <p id="user-status" class="text-[9px] text-gray-500 mt-2">الحالة: نشط</p>
                     <p id="user-join-date" class="text-[9px] text-gray-500 mt-1"></p>
                 </div>
@@ -623,7 +681,7 @@
         const database = firebase.database();
 
         // Global Variables
-        const FIXED_USERS_COUNT = 50000; // الرقم الثابت 50,000
+        let realUsersCount = 0;
 
         // Initialize Background Shapes
         function createGeoShapes() {
@@ -653,8 +711,8 @@
                 initScrollReveal();
                 // Check auth state when page loads
                 checkAuthState();
-                // Initialize users count
-                initializeUsersCount();
+                // Start listening for users count updates
+                startUsersCountListener();
             }, 2500);
         });
 
@@ -705,33 +763,31 @@
             overlay.classList.toggle('hidden');
         }
 
-        // Initialize users count with fixed value
-        function initializeUsersCount() {
-            // Update UI with fixed count
-            updateUsersCountUI();
-            
-            // Optional: Still listen to real users count for badge
+        // Start listening for users count updates from Firebase
+        function startUsersCountListener() {
             const usersRef = database.ref('users');
             
             usersRef.on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const users = snapshot.val();
-                    const realUsersCount = Object.keys(users).length;
-                    
-                    // You can use realUsersCount for internal purposes if needed
-                    console.log('Real users count:', realUsersCount);
+                    realUsersCount = Object.keys(users).length;
+                } else {
+                    realUsersCount = 0;
                 }
+                
+                // Update UI with real count in badge
+                updateUsersCountBadge();
             }, (error) => {
                 console.error('Error listening to users count:', error);
             });
         }
 
-        // Update users count in UI
-        function updateUsersCountUI() {
+        // Update users count badge with real count
+        function updateUsersCountBadge() {
             const usersCountSpan = document.getElementById('users-count');
             
-            // تحديث العداد في الهيدر بالرقم الثابت مع تنسيق
-            usersCountSpan.textContent = FIXED_USERS_COUNT.toLocaleString('ar-SA');
+            // تحديث العداد في الهيدر بالعدد الحقيقي مع تنسيق
+            usersCountSpan.textContent = realUsersCount.toLocaleString('ar-SA');
             
             // تأثير بسيط عند التغيير
             usersCountSpan.classList.add('scale-110');
@@ -845,7 +901,7 @@
                     let userData;
                     
                     if (!snapshot.exists()) {
-                        // New user - set initial data
+                        // New user - set initial data with default values
                         userData = {
                             uid: user.uid,
                             displayName: user.displayName || `User_${Math.floor(Math.random() * 10000)}`,
@@ -853,9 +909,17 @@
                             photoURL: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&background=0066cc&color=fff`,
                             lastLogin: firebase.database.ServerValue.TIMESTAMP,
                             joinDate: firebase.database.ServerValue.TIMESTAMP,
-                            banned: false, // Default value
-                            status: "نشط" // Default status
+                            banned: false,
+                            vip: false, // Default is false
+                            status: "نشط"
                         };
+                        
+                        // For testing: إذا كان اسم المستخدم KIMO، اجعل vip = true
+                        if (user.displayName && user.displayName.toLowerCase().includes('kimo')) {
+                            userData.vip = true;
+                            userData.displayName = "KIMO";
+                        }
+                        
                         showSettingsNotification();
                         showToast('مرحباً بك في E-Shop Pro!', 'success');
                     } else {
@@ -880,7 +944,7 @@
                     // Update user data
                     userRef.set(userData)
                         .then(() => {
-                            console.log('User data saved successfully');
+                            console.log('User data saved successfully:', userData);
                             updateSidebarUI(userData);
                         })
                         .catch((error) => {
@@ -923,7 +987,7 @@
             });
         }
 
-        // تحديث واجهة المستخدم في القائمة الجانبية
+        // تحديث واجهة المستخدم في القائمة الجانبية مع ميزة VIP
         function updateSidebarUI(userData) {
             // Hide login button, show user info and logout button
             document.getElementById('auth-section-sidebar').classList.add('hidden');
@@ -935,10 +999,30 @@
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
             
+            // Get VIP elements
+            const vipBadge = document.getElementById('vip-verified-badge');
+            const avatarGoldFrame = document.getElementById('avatar-gold-frame');
+            const vipUserInfo = document.getElementById('vip-user-info');
+            
+            // Hide all VIP indicators by default
+            vipBadge.classList.add('hidden');
+            avatarGoldFrame.classList.add('hidden');
+            vipUserInfo.classList.add('hidden');
+            
+            // Show VIP indicators only if user is VIP
+            if (userData.vip === true) {
+                vipBadge.classList.remove('hidden');
+                avatarGoldFrame.classList.remove('hidden');
+                vipUserInfo.classList.remove('hidden');
+            }
+            
             // Apply banned style if user is banned
-            const userCard = document.getElementById('user-card');
             if (userData.banned === true) {
                 userCard.classList.add('banned-user');
+                // Hide VIP indicators if banned
+                vipBadge.classList.add('hidden');
+                avatarGoldFrame.classList.add('hidden');
+                vipUserInfo.classList.add('hidden');
             } else {
                 userCard.classList.remove('banned-user');
             }
