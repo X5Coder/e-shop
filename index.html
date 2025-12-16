@@ -826,7 +826,7 @@
             });
         }
 
-        // Update users count in UI - تم التبسيط
+        // Update users count in UI
         function updateUsersCountUI() {
             const usersCountSpan = document.getElementById('users-count');
             const totalUsersCount = document.getElementById('total-users-count');
@@ -1028,7 +1028,7 @@
             });
         }
 
-        // Update Sidebar UI with user data - **تم التصحيح هنا**
+        // **تم التصحيح هنا - إزالة علامة VIP الثابتة**
         function updateSidebarUI(userData) {
             // Hide login button, show user info and logout button
             document.getElementById('auth-section-sidebar').classList.add('hidden');
@@ -1040,37 +1040,37 @@
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
             
-            // **التصحيح الأساسي: إخفاء علامة VIP من الهيدر (تم إزالتها أصلاً)**
-            // لا يوجد عنصر header-vip-badge في الهيدر بعد الآن
-            
             // Get VIP badge elements
             const vipBadge = document.getElementById('vip-badge');
             const avatarVipCrown = document.getElementById('avatar-vip-crown');
             const userCard = document.getElementById('user-card');
             
-            // **التصحيح: التحقق من قيمة vip بشكل صحيح**
-            console.log('User VIP status:', userData.vip, 'Type:', typeof userData.vip);
+            // **إزالة علامة VIP الثابتة - التحقق الصحيح**
+            console.log('VIP Status Check:', {
+                vipValue: userData.vip,
+                type: typeof userData.vip,
+                isTrue: userData.vip === true,
+                isFalse: userData.vip === false
+            });
             
+            // إخفاء جميع علامات VIP أولاً (الحالة الافتراضية)
+            vipBadge.classList.add('hidden');
+            avatarVipCrown.classList.add('hidden');
+            userCard.classList.remove('vip-user-card');
+            
+            // إظهار علامة VIP فقط إذا كانت القيمة true
             if (userData.vip === true) {
-                console.log('Showing VIP badges for user');
-                // إظهار علامة VIP في الشريط الجانبي
+                console.log('Showing VIP badges for VIP user');
                 vipBadge.classList.remove('hidden');
-                
-                // إظهار التاج على الصورة
                 avatarVipCrown.classList.remove('hidden');
-                
-                // إضافة تنسيق خاص لبطاقة المستخدم VIP
                 userCard.classList.add('vip-user-card');
             } else {
-                console.log('Hiding VIP badges for user');
-                // إخفاء جميع علامات VIP
-                vipBadge.classList.add('hidden');
-                avatarVipCrown.classList.add('hidden');
-                userCard.classList.remove('vip-user-card');
+                console.log('Hiding VIP badges for normal user');
+                // لا تظهر أي علامات VIP
             }
             
             // Apply banned style if user is banned
-            if (userData.banned) {
+            if (userData.banned === true) {
                 userCard.classList.add('banned-user');
             } else {
                 userCard.classList.remove('banned-user');
