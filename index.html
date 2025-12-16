@@ -332,31 +332,119 @@
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             color: #000;
             font-weight: bold;
-            padding: 1px 6px;
-            border-radius: 10px;
-            font-size: 9px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
             margin-right: 5px;
             display: inline-flex;
             align-items: center;
-            gap: 2px;
+            gap: 3px;
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
         }
 
-        /* Banned User Style */
-        .banned-user {
-            opacity: 0.5;
-            position: relative;
+        /* User Counter in Header */
+        .user-counter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
 
-        .banned-user::after {
-            content: "محظور";
-            position: absolute;
-            top: 0;
-            right: 0;
-            background: rgba(255, 0, 0, 0.8);
+        .user-counter:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .user-counter-number {
+            background: linear-gradient(135deg, #0066cc, #0099ff);
             color: white;
-            font-size: 8px;
-            padding: 1px 4px;
-            border-radius: 3px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 102, 204, 0.4);
+        }
+
+        .user-counter-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            object-fit: cover;
+        }
+
+        /* Banned Modal */
+        .banned-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .banned-modal-content {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(255, 0, 0, 0.2);
+            animation: modal-appear 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modal-appear {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .banned-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #ff3333, #cc0000);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.4);
+        }
+
+        /* Verified Badge */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #0099ff, #0066cc);
+            border-radius: 50%;
+            margin-right: 5px;
+            font-size: 10px;
+            color: white;
+            box-shadow: 0 2px 6px rgba(0, 102, 204, 0.4);
         }
     </style>
 </head>
@@ -367,6 +455,21 @@
         <div class="shimmer-text text-4xl font-bold mb-4 tracking-tighter">E-SHOP <span class="text-blue-600">PRO</span></div>
         <div class="loader-bar">
             <div class="loader-progress"></div>
+        </div>
+    </div>
+
+    <!-- Banned Modal (Hidden by default) -->
+    <div id="banned-modal" class="banned-modal hidden">
+        <div class="banned-modal-content">
+            <div class="banned-icon">
+                <i class="fas fa-ban"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-3">حسابك محظور!</h2>
+            <p class="text-gray-300 mb-6">تم حظر حسابك من الوصول إلى منصة E-Shop Pro. إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم الفني.</p>
+            <button onclick="signOutFromBanned()" class="btn-press bg-red-600 hover:bg-red-700 text-white py-3 px-8 rounded-xl font-bold flex items-center justify-center gap-2 mx-auto">
+                <i class="fas fa-sign-out-alt"></i>
+                تسجيل الخروج
+            </button>
         </div>
     </div>
 
@@ -395,6 +498,12 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
+            <!-- User Counter -->
+            <div id="user-counter" class="user-counter hidden">
+                <span id="user-count-number" class="user-counter-number">0</span>
+                <img id="user-count-avatar" class="user-counter-avatar" src="https://ui-avatars.com/api/?name=U&background=0066cc&color=fff">
+            </div>
+            
             <!-- Hamburger Menu Icon -->
             <button onclick="toggleSidebar()" class="btn-press settings-icon w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 active:scale-90 transition-all border border-white/10" id="settings-button">
                 <div class="hamburger-icon">
@@ -421,13 +530,21 @@
                 <div class="text-right flex-1">
                     <div class="flex items-center justify-end gap-1 mb-1">
                         <h3 id="user-name" class="font-bold text-lg"></h3>
-                        <span id="vip-badge" class="vip-badge hidden">
-                            <i class="fas fa-star text-[8px]"></i> VIP
+                        <span id="vip-badge" class="verified-badge hidden">
+                            <i class="fas fa-check"></i>
                         </span>
                     </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
-                    <p id="user-status" class="text-[9px] text-gray-500 mt-2"></p>
-                    <p id="user-join-date" class="text-[9px] text-gray-500 mt-1"></p>
+                    <div id="user-stats" class="flex gap-3 mt-3">
+                        <div class="text-center">
+                            <div class="text-xs font-bold text-white">المستوى</div>
+                            <div id="user-level" class="text-sm text-blue-400">عادي</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-xs font-bold text-white">الحالة</div>
+                            <div id="user-status" class="text-sm text-green-400">نشط</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -563,7 +680,7 @@
                 <img src="https://ui-avatars.com/api/?name=C&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">+1k</div>
             </div>
-            <h4 class="text-lg font-bold mb-2">انضم إلى 50,000+ مستخدم</h4>
+            <h4 class="text-lg font-bold mb-2">انضم إلى <span id="total-users-count">50,000+</span> مستخدم</h4>
             <p class="text-xs text-gray-500">نحن نقدم أفضل الخدمات الرقمية بأعلى معايير الأمان والجودة العالمية</p>
         </div>
     </main>
@@ -584,6 +701,10 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+
+        // Global variables
+        let totalUsersCount = 0;
+        let lastUserAvatar = 'https://ui-avatars.com/api/?name=U&background=0066cc&color=fff';
 
         // Initialize Background Shapes
         function createGeoShapes() {
@@ -613,6 +734,10 @@
                 initScrollReveal();
                 // Check auth state when page loads
                 checkAuthState();
+                // Load total users count
+                loadTotalUsersCount();
+                // Listen for new users
+                listenForNewUsers();
             }, 2500);
         });
 
@@ -661,6 +786,90 @@
             const overlay = document.getElementById('sidebar-overlay');
             sidebar.classList.toggle('active');
             overlay.classList.toggle('hidden');
+        }
+
+        // Load total users count
+        function loadTotalUsersCount() {
+            const usersRef = database.ref('users');
+            usersRef.once('value')
+                .then((snapshot) => {
+                    totalUsersCount = snapshot.numChildren();
+                    updateUserCounter(totalUsersCount);
+                    document.getElementById('total-users-count').textContent = `${totalUsersCount.toLocaleString('ar')}+`;
+                })
+                .catch((error) => {
+                    console.error('Error loading users count:', error);
+                });
+        }
+
+        // Listen for new users
+        function listenForNewUsers() {
+            const usersRef = database.ref('users');
+            usersRef.on('child_added', (snapshot) => {
+                totalUsersCount++;
+                updateUserCounter(totalUsersCount);
+                
+                // Update the avatar with the latest user's photo
+                const userData = snapshot.val();
+                if (userData.photoURL) {
+                    lastUserAvatar = userData.photoURL;
+                    document.getElementById('user-count-avatar').src = lastUserAvatar;
+                }
+                
+                // Update total users count in trust section
+                document.getElementById('total-users-count').textContent = `${totalUsersCount.toLocaleString('ar')}+`;
+                
+                // Animate the counter
+                animateCounter();
+            });
+        }
+
+        // Update user counter in header
+        function updateUserCounter(count) {
+            const userCounter = document.getElementById('user-counter');
+            const countNumber = document.getElementById('user-count-number');
+            
+            if (count > 0) {
+                userCounter.classList.remove('hidden');
+                countNumber.textContent = count > 99 ? '99+' : count;
+            } else {
+                userCounter.classList.add('hidden');
+            }
+        }
+
+        // Animate counter when it changes
+        function animateCounter() {
+            const counter = document.getElementById('user-count-number');
+            counter.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                counter.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        // Show banned modal
+        function showBannedModal() {
+            const modal = document.getElementById('banned-modal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Hide banned modal
+        function hideBannedModal() {
+            const modal = document.getElementById('banned-modal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        // Sign out from banned modal
+        function signOutFromBanned() {
+            auth.signOut()
+                .then(() => {
+                    hideBannedModal();
+                    resetSidebarUI();
+                })
+                .catch((error) => {
+                    console.error('Error signing out:', error);
+                });
         }
 
         // Firebase Authentication Functions
@@ -724,9 +933,8 @@
                             joinDate: firebase.database.ServerValue.TIMESTAMP,
                             banned: false, // Default value
                             vip: false, // Default value
-                            status: "نشط" // Default status
+                            status: "نشط"
                         };
-                        showSettingsNotification();
                         showToast('مرحباً بك في E-Shop Pro!', 'success');
                     } else {
                         // Existing user - update only necessary fields
@@ -737,6 +945,13 @@
                             displayName: user.displayName || existingData.displayName,
                             photoURL: user.photoURL || existingData.photoURL
                         };
+                        
+                        // Check if user is banned
+                        if (userData.banned) {
+                            showBannedModal();
+                            return;
+                        }
+                        
                         showToast('مرحباً بعودتك!', 'success');
                     }
                     
@@ -745,12 +960,6 @@
                         .then(() => {
                             console.log('User data saved successfully');
                             updateSidebarUI(userData);
-                            
-                            // Check if user is banned
-                            if (userData.banned) {
-                                showToast('حسابك محظور!', 'error');
-                                signOut(); // Auto sign out if banned
-                            }
                         })
                         .catch((error) => {
                             console.error('Error saving user data:', error);
@@ -771,12 +980,13 @@
                         .then((snapshot) => {
                             if (snapshot.exists()) {
                                 const userData = snapshot.val();
+                                
                                 // Check if user is banned
                                 if (userData.banned) {
-                                    showToast('حسابك محظور!', 'error');
-                                    signOut();
+                                    showBannedModal();
                                     return;
                                 }
+                                
                                 updateSidebarUI(userData);
                             } else {
                                 // User exists in auth but not in database
@@ -805,35 +1015,28 @@
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
             
-            // Show VIP badge if user is VIP
+            // Show verified badge if user is VIP
             const vipBadge = document.getElementById('vip-badge');
             if (userData.vip === true) {
                 vipBadge.classList.remove('hidden');
+                document.getElementById('user-level').textContent = "مميز";
+                document.getElementById('user-level').classList.add('text-yellow-400');
             } else {
                 vipBadge.classList.add('hidden');
+                document.getElementById('user-level').textContent = "عادي";
+                document.getElementById('user-level').classList.remove('text-yellow-400');
+                document.getElementById('user-level').classList.add('text-blue-400');
             }
             
-            // Show user status
-            document.getElementById('user-status').textContent = `الحالة: ${userData.banned ? 'محظور' : 'نشط'}`;
-            
-            // Apply banned style if user is banned
-            const userCard = document.getElementById('user-card');
+            // Update user status
             if (userData.banned) {
-                userCard.classList.add('banned-user');
+                document.getElementById('user-status').textContent = "محظور";
+                document.getElementById('user-status').classList.remove('text-green-400');
+                document.getElementById('user-status').classList.add('text-red-400');
             } else {
-                userCard.classList.remove('banned-user');
-            }
-            
-            // Format join date if available
-            if (userData.joinDate) {
-                const joinDate = new Date(userData.joinDate);
-                const options = { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    calendar: 'gregory'
-                };
-                document.getElementById('user-join-date').textContent = `عضو منذ: ${joinDate.toLocaleDateString('ar-SA', options)}`;
+                document.getElementById('user-status').textContent = "نشط";
+                document.getElementById('user-status').classList.remove('text-red-400');
+                document.getElementById('user-status').classList.add('text-green-400');
             }
         }
 
@@ -850,17 +1053,8 @@
             authText.textContent = 'تسجيل الدخول عبر جوجل';
             authButton.disabled = false;
             
-            // Remove notification dot from settings icon
-            document.getElementById('settings-button').classList.remove('has-notification');
-        }
-
-        // Show notification dot on settings icon for new users
-        function showSettingsNotification() {
-            document.getElementById('settings-button').classList.add('has-notification');
-            // Remove notification after 5 seconds
-            setTimeout(() => {
-                document.getElementById('settings-button').classList.remove('has-notification');
-            }, 5000);
+            // Hide banned modal if visible
+            hideBannedModal();
         }
 
         // Show toast notification
