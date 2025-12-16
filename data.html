@@ -175,24 +175,82 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Image Gallery */
+        /* Image Gallery - NEW DESIGN */
         .image-gallery {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            position: relative;
+            width: 100%;
+            height: 220px;
             margin-bottom: 15px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        @media (min-width: 768px) {
+            .image-gallery {
+                height: 250px;
+            }
         }
 
         .book-image {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 180px;
+            height: 100%;
             object-fit: cover;
             border-radius: 10px;
-            transition: transform 0.3s ease;
+            transition: opacity 1.2s ease-in-out;
         }
 
-        .book-image:hover {
-            transform: scale(1.05);
+        .book-image.hidden {
+            opacity: 0;
+        }
+
+        .book-image.visible {
+            opacity: 1;
+        }
+
+        /* Image Navigation Dots */
+        .image-dots {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            z-index: 5;
+        }
+
+        .image-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .image-dot.active {
+            background: #0066cc;
+            width: 20px;
+            border-radius: 10px;
+        }
+
+        /* Auto-play indicator */
+        .auto-play-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            color: white;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
     </style>
 </head>
@@ -218,17 +276,17 @@
     </header>
 
     <!-- Main Content -->
-    <main class="pt-20 pb-8 px-4 mx-auto">
+    <main class="pt-20 pb-8 px-4 mx-auto max-w-6xl">
         <!-- Page Title -->
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-extrabold mb-2">المكتبة الرقمية</h1>
-            <p class="text-gray-400">اختر من مجموعة واسعة من الكتب الإلكترونية المميزة</p>
+        <div class="text-center mb-10">
+            <h1 class="text-3xl md:text-4xl font-extrabold mb-3 bg-gradient-to-r from-blue-500 to-blue-300 bg-clip-text text-transparent">المكتبة الرقمية</h1>
+            <p class="text-gray-400 max-w-2xl mx-auto">اختر من مجموعة واسعة من الكتب الإلكترونية المميزة مع عرض تفاعلي متعدد الصور</p>
         </div>
 
-        <!-- Books Grid -->
-        <div id="books-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Books Grid - Updated for responsive design -->
+        <div id="books-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <!-- سيتم إضافة الكتب ديناميكياً من Firebase -->
-            <div class="text-center py-10">
+            <div class="col-span-full text-center py-10">
                 <div class="loading-spinner mx-auto mb-4"></div>
                 <p class="text-gray-400">جاري تحميل الكتب...</p>
             </div>
@@ -312,7 +370,7 @@
             }, (error) => {
                 console.error('Error loading books:', error);
                 booksContainer.innerHTML = `
-                    <div class="col-span-2 text-center py-10">
+                    <div class="col-span-full text-center py-10">
                         <div class="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-500/30">
                             <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
                         </div>
@@ -333,16 +391,31 @@
             bookDiv.className = 'book-card rounded-2xl p-4 cursor-pointer';
             bookDiv.onclick = () => openBookDetails(bookId);
             
+            // معالجة الصور - استخدام الصور المتاحة أو الصور الافتراضية
+            const img1 = book.img1 || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80';
+            const img2 = book.img2 || 'https://images.unsplash.com/photo-1512820790803-83ca734da794?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80';
+            
             bookDiv.innerHTML = `
                 ${discountPercentage > 0 ? `<div class="discount-badge">خصم ${discountPercentage}%</div>` : ''}
                 
-                <div class="image-gallery">
-                    <img src="${book.img1 || 'https://via.placeholder.com/300x400/0066cc/ffffff?text=Book+Cover'}" 
-                         alt="${book.name}" 
-                         class="book-image">
-                    <img src="${book.img2 || 'https://via.placeholder.com/300x400/0066cc/ffffff?text=Book+Preview'}" 
-                         alt="${book.name} Preview" 
-                         class="book-image">
+                <div class="image-gallery" id="gallery-${bookId}">
+                    <div class="auto-play-indicator">
+                        <i class="fas fa-images"></i>
+                        <span>عرض تلقائي</span>
+                    </div>
+                    <img src="${img1}" 
+                         alt="${book.name || 'كتاب'}" 
+                         class="book-image visible"
+                         data-index="0">
+                    <img src="${img2}" 
+                         alt="${book.name || 'كتاب'} - معاينة" 
+                         class="book-image hidden"
+                         data-index="1">
+                    
+                    <div class="image-dots">
+                        <div class="image-dot active" data-target="0"></div>
+                        <div class="image-dot" data-target="1"></div>
+                    </div>
                 </div>
                 
                 <h3 class="text-lg font-bold mb-2 truncate">${book.name || 'كتاب بدون عنوان'}</h3>
@@ -365,7 +438,107 @@
                 </div>
             `;
             
+            // Initialize image gallery functionality for this book
+            setTimeout(() => {
+                initImageGallery(bookId);
+            }, 100);
+            
             return bookDiv;
+        }
+
+        // Initialize Image Gallery with auto-play
+        function initImageGallery(bookId) {
+            const gallery = document.getElementById(`gallery-${bookId}`);
+            if (!gallery) return;
+            
+            const images = gallery.querySelectorAll('.book-image');
+            const dots = gallery.querySelectorAll('.image-dot');
+            
+            if (images.length < 2) return;
+            
+            let currentIndex = 0;
+            let interval;
+            
+            function showImage(index) {
+                // Hide all images
+                images.forEach(img => {
+                    img.classList.remove('visible');
+                    img.classList.add('hidden');
+                });
+                
+                // Show selected image
+                images[index].classList.remove('hidden');
+                images[index].classList.add('visible');
+                
+                // Update dots
+                dots.forEach(dot => {
+                    dot.classList.remove('active');
+                });
+                dots[index].classList.add('active');
+                
+                currentIndex = index;
+            }
+            
+            function nextImage() {
+                const nextIndex = (currentIndex + 1) % images.length;
+                showImage(nextIndex);
+            }
+            
+            // Add click event to dots
+            dots.forEach((dot, index) => {
+                dot.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Prevent triggering book card click
+                    showImage(index);
+                    
+                    // Reset auto-play interval
+                    clearInterval(interval);
+                    startAutoPlay();
+                });
+            });
+            
+            function startAutoPlay() {
+                interval = setInterval(nextImage, 3000); // Change image every 3 seconds
+            }
+            
+            // Start auto-play
+            startAutoPlay();
+            
+            // Pause auto-play on hover (optional)
+            gallery.addEventListener('mouseenter', () => {
+                clearInterval(interval);
+            });
+            
+            gallery.addEventListener('mouseleave', () => {
+                startAutoPlay();
+            });
+            
+            // Touch events for mobile
+            let touchStartX = 0;
+            
+            gallery.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                clearInterval(interval);
+            });
+            
+            gallery.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].clientX;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > 50) { // Minimum swipe distance
+                    if (diff > 0) {
+                        // Swipe left
+                        const nextIndex = (currentIndex + 1) % images.length;
+                        showImage(nextIndex);
+                    } else {
+                        // Swipe right
+                        const prevIndex = (currentIndex - 1 + images.length) % images.length;
+                        showImage(prevIndex);
+                    }
+                }
+                
+                // Restart auto-play
+                startAutoPlay();
+            });
         }
 
         // Format Price
