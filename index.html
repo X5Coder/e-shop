@@ -90,6 +90,45 @@
             to { width: 100%; }
         }
 
+        /* Banned Dialog */
+        #banned-dialog {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+
+        #banned-dialog.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .banned-content {
+            background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255, 0, 0, 0.2);
+            box-shadow: 0 20px 60px rgba(255, 0, 0, 0.3);
+            transform: translateY(30px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        #banned-dialog.active .banned-content {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
         /* Animations */
         .fade-in-up {
             opacity: 0;
@@ -358,9 +397,38 @@
             padding: 1px 4px;
             border-radius: 3px;
         }
+
+        /* Site Blocker */
+        .site-blocker {
+            pointer-events: none;
+            opacity: 0.3;
+            filter: blur(2px);
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
+
+    <!-- Banned User Dialog -->
+    <div id="banned-dialog">
+        <div class="banned-content">
+            <div class="w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-red-500/30">
+                <i class="fas fa-ban text-red-500 text-3xl"></i>
+            </div>
+            
+            <h2 class="text-2xl font-bold mb-3 text-red-500">حسابك محظور</h2>
+            <p class="text-gray-400 mb-6 leading-relaxed">تم حظر حسابك من استخدام المنصة بسبب مخالفة شروط الاستخدام.</p>
+            
+            <div class="space-y-3">
+                <button onclick="signOut()" class="btn-press w-full py-3 px-6 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+                
+                <p class="text-xs text-gray-500 mt-4">بعد تسجيل الخروج، لن تتمكن من الوصول للموقع حتى إلغاء الحظر</p>
+            </div>
+        </div>
+    </div>
 
     <!-- Splash Screen -->
     <div id="splash">
@@ -488,7 +556,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="pt-24 pb-8 px-4 mx-auto overflow-y-auto">
+    <main id="main-content" class="pt-24 pb-8 px-4 mx-auto overflow-y-auto">
         
         <!-- Hero Section -->
         <section class="scroll-reveal text-center mb-10">
@@ -663,6 +731,69 @@
             overlay.classList.toggle('hidden');
         }
 
+        // Show/Hide Banned Dialog
+        function showBannedDialog() {
+            const dialog = document.getElementById('banned-dialog');
+            const mainContent = document.getElementById('main-content');
+            const header = document.querySelector('header');
+            const sidebar = document.getElementById('sidebar');
+            
+            // Block the site
+            mainContent.classList.add('site-blocker');
+            header.classList.add('site-blocker');
+            if (sidebar.classList.contains('active')) {
+                toggleSidebar();
+            }
+            
+            // Show banned dialog
+            dialog.classList.add('active');
+            
+            // Disable all interactive elements
+            document.querySelectorAll('button, a, input').forEach(el => {
+                el.style.pointerEvents = 'none';
+            });
+        }
+
+        function hideBannedDialog() {
+            const dialog = document.getElementById('banned-dialog');
+            const mainContent = document.getElementById('main-content');
+            const header = document.querySelector('header');
+            
+            // Unblock the site
+            mainContent.classList.remove('site-blocker');
+            header.classList.remove('site-blocker');
+            
+            // Hide banned dialog
+            dialog.classList.remove('active');
+            
+            // Re-enable all interactive elements
+            document.querySelectorAll('button, a, input').forEach(el => {
+                el.style.pointerEvents = '';
+            });
+        }
+
+        // Check if user is banned and show dialog
+        function checkUserBanStatus(userId) {
+            if (!userId) return false;
+            
+            const userRef = database.ref('users/' + userId);
+            userRef.once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        if (userData.banned === true) {
+                            // User is banned - show banned dialog
+                            setTimeout(() => {
+                                showBannedDialog();
+                            }, 100);
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error checking ban status:', error);
+                });
+        }
+
         // Firebase Authentication Functions
         function signInWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
@@ -695,6 +826,7 @@
         function signOut() {
             auth.signOut()
                 .then(() => {
+                    hideBannedDialog();
                     showToast('تم تسجيل الخروج بنجاح!', 'success');
                     toggleSidebar();
                 })
@@ -737,6 +869,13 @@
                             displayName: user.displayName || existingData.displayName,
                             photoURL: user.photoURL || existingData.photoURL
                         };
+                        
+                        // Check if user is banned
+                        if (existingData.banned === true) {
+                            showBannedDialog();
+                            return;
+                        }
+                        
                         showToast('مرحباً بعودتك!', 'success');
                     }
                     
@@ -745,12 +884,6 @@
                         .then(() => {
                             console.log('User data saved successfully');
                             updateSidebarUI(userData);
-                            
-                            // Check if user is banned
-                            if (userData.banned) {
-                                showToast('حسابك محظور!', 'error');
-                                signOut(); // Auto sign out if banned
-                            }
                         })
                         .catch((error) => {
                             console.error('Error saving user data:', error);
@@ -772,9 +905,8 @@
                             if (snapshot.exists()) {
                                 const userData = snapshot.val();
                                 // Check if user is banned
-                                if (userData.banned) {
-                                    showToast('حسابك محظور!', 'error');
-                                    signOut();
+                                if (userData.banned === true) {
+                                    showBannedDialog();
                                     return;
                                 }
                                 updateSidebarUI(userData);
@@ -815,14 +947,6 @@
             
             // Show user status
             document.getElementById('user-status').textContent = `الحالة: ${userData.banned ? 'محظور' : 'نشط'}`;
-            
-            // Apply banned style if user is banned
-            const userCard = document.getElementById('user-card');
-            if (userData.banned) {
-                userCard.classList.add('banned-user');
-            } else {
-                userCard.classList.remove('banned-user');
-            }
             
             // Format join date if available
             if (userData.joinDate) {
