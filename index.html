@@ -246,72 +246,130 @@
             right: 0;
         }
 
-        /* VIP Simple Gold Frame */
-        .vip-gold-frame {
+        /* New animation for social icons */
+        .social-icon {
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
-            border: 3px solid transparent;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700) border-box;
-            background-clip: border-box;
-            animation: gold-shine 2s linear infinite;
+            overflow: hidden;
         }
 
-        .vip-gold-frame::before {
+        .social-icon::before {
             content: '';
             position: absolute;
-            inset: -3px;
-            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
-            border-radius: inherit;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
             z-index: -1;
-            filter: blur(5px);
-            opacity: 0.5;
         }
 
-        @keyframes gold-shine {
-            0% { border-color: #FFD700; }
-            50% { border-color: #FFA500; }
-            100% { border-color: #FFD700; }
+        .social-icon:hover::before {
+            transform: translateY(0);
+        }
+
+        .social-icon:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Pulse animation for user avatar */
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .animate-pulse-slow {
+            animation: pulse-slow 2s ease-in-out infinite;
+        }
+
+        /* Shimmer effect for text */
+        .shimmer-text {
+            background: linear-gradient(90deg, #fff 0%, #0066cc 50%, #fff 100%);
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+        }
+
+        /* Compact Social Row */
+        .compact-social-row {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .compact-social-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            font-size: 18px;
+        }
+
+        .compact-social-icon:hover {
+            transform: translateY(-3px) scale(1.1);
+        }
+
+        /* Welcome Toast - Responsive */
+        #welcome-toast {
+            max-width: 90%;
+            width: auto;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Hamburger Menu Icon */
+        .hamburger-icon {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 20px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .hamburger-icon span {
+            display: block;
+            height: 2px;
+            width: 100%;
+            background-color: #fff;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hamburger-icon:hover span {
+            background-color: #0066cc;
         }
 
         /* VIP Verification Badge */
         .vip-verified-badge {
-            background: linear-gradient(135deg, #10B981, #059669);
-            color: white;
-            font-weight: bold;
-            padding: 2px 6px;
-            border-radius: 10px;
-            font-size: 9px;
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-            margin-right: 5px;
-        }
-
-        /* Active Users Badge */
-        .active-users-badge {
-            background: linear-gradient(135deg, #10B981, #059669);
-            color: white;
-            font-weight: bold;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 11px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            box-shadow: 0 3px 10px rgba(16, 185, 129, 0.3);
-            animation: pulse-green 2s infinite;
-        }
-
-        @keyframes pulse-green {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        /* Global Users Badge */
-        .global-users-badge {
-            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-            color: white;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
             font-weight: bold;
             padding: 3px 8px;
             border-radius: 12px;
@@ -319,6 +377,118 @@
             display: inline-flex;
             align-items: center;
             gap: 3px;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+            animation: pulse-gold 2s infinite;
+        }
+
+        /* Gold Frame for VIP Users */
+        .vip-gold-frame {
+            border: 3px solid transparent;
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-gold-frame::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700, #FFA500);
+            border-radius: inherit;
+            z-index: -1;
+            animation: rotate-border 3s linear infinite;
+        }
+
+        /* Gold Card Style for VIP Users */
+        .vip-gold-card {
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.05));
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vip-gold-card::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(45deg, #FFD700, #FFA500, #FFD700);
+            border-radius: inherit;
+            z-index: -1;
+            animation: rotate-border 3s linear infinite;
+            opacity: 0.3;
+        }
+
+        .vip-gold-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #FFD700, transparent);
+            animation: shine-line 2s ease-in-out infinite;
+        }
+
+        /* VIP Seal/Certificate */
+        .vip-certificate {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+            animation: float-gold 3s ease-in-out infinite;
+        }
+
+        /* VIP User Info */
+        .vip-user-info {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(255, 165, 0, 0.02));
+            border-left: 3px solid #FFD700;
+            padding-right: 10px;
+        }
+
+        /* Animations */
+        @keyframes rotate-border {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes shine-line {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.9; }
+        }
+
+        @keyframes float-gold {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
+        }
+
+        /* Users Count Badge - بسيط */
+        .users-count-badge {
+            background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+            color: white;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(0, 102, 204, 0.3);
+            box-shadow: 0 3px 10px rgba(0, 102, 204, 0.3);
         }
 
         /* Banned User Style */
@@ -404,9 +574,9 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
-            <!-- Active Users Count Badge -->
-            <div id="users-count-badge" class="active-users-badge">
-                <i class="fas fa-users text-xs"></i>
+            <!-- Users Count Badge بجانب الإعدادات -->
+            <div id="users-count-badge" class="users-count-badge">
+                <i class="fas fa-user text-xs"></i>
                 <span id="users-count">0</span>
             </div>
             
@@ -431,10 +601,17 @@
 
         <!-- User Section (Only visible when logged in) -->
         <div id="user-info-sidebar" class="hidden mb-4">
-            <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
+            <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10 relative">
+                <!-- VIP Certificate Seal -->
+                <div id="vip-certificate" class="vip-certificate hidden">
+                    <i class="fas fa-certificate text-black text-lg"></i>
+                </div>
+                
                 <div class="relative">
                     <div id="avatar-container" class="relative">
-                        <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-white/20">
+                        <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-white/20 shadow-xl">
+                        <!-- Gold Frame Overlay for VIP -->
+                        <div id="avatar-gold-frame" class="absolute inset-0 rounded-full border-3 border-transparent hidden"></div>
                     </div>
                 </div>
                 <div class="text-right flex-1">
@@ -443,10 +620,16 @@
                         <!-- VIP Verification Badge -->
                         <div id="vip-verified-badge" class="vip-verified-badge hidden">
                             <i class="fas fa-check-circle text-xs"></i>
-                            <span>VIP</span>
+                            <span>VIP موثق</span>
                         </div>
                     </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
+                    <div id="vip-user-info" class="hidden">
+                        <div class="flex items-center gap-2 mt-2">
+                            <span class="text-xs text-yellow-500 font-bold">عضوية مميزة</span>
+                            <i class="fas fa-crown text-yellow-500 text-xs"></i>
+                        </div>
+                    </div>
                     <p id="user-status" class="text-[9px] text-gray-500 mt-2">الحالة: نشط</p>
                     <p id="user-join-date" class="text-[9px] text-gray-500 mt-1"></p>
                 </div>
@@ -578,32 +761,14 @@
 
         <!-- Trust Section -->
         <div class="scroll-reveal mt-10 mb-6 bg-white/5 p-6 rounded-3xl text-center border border-white/5">
-            <!-- Global Users Count (50K) -->
-            <div class="mb-4">
-                <div class="global-users-badge inline-block mb-2">
-                    <i class="fas fa-globe text-xs"></i>
-                    <span>50,000+ مستخدم حول العالم</span>
-                </div>
-                <h4 class="text-lg font-bold mb-2">انضم إلى مجتمعنا العالمي</h4>
-            </div>
-            
-            <!-- Active Users Count -->
-            <div class="flex justify-center -space-x-3 mb-4">
+            <div class="flex justify-center -space-x-3 mb-3">
                 <img src="https://ui-avatars.com/api/?name=A&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <img src="https://ui-avatars.com/api/?name=B&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <img src="https://ui-avatars.com/api/?name=C&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
-                <div class="w-9 h-9 rounded-full bg-green-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">
-                    +<span id="total-active-users">0</span>
-                </div>
+                <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">+<span id="total-users-count">0</span></div>
             </div>
-            
-            <div class="active-users-badge inline-block">
-                <i class="fas fa-user-check text-xs"></i>
-                <span id="active-users-count">0</span>
-                <span>مستخدم نشط الآن</span>
-            </div>
-            
-            <p class="text-xs text-gray-500 mt-3">نحن نقدم أفضل الخدمات الرقمية بأعلى معايير الأمان والجودة العالمية</p>
+            <h4 class="text-lg font-bold mb-2">انضم إلى <span id="trust-users-count">0</span>+ مستخدم</h4>
+            <p class="text-xs text-gray-500">نحن نقدم أفضل الخدمات الرقمية بأعلى معايير الأمان والجودة العالمية</p>
         </div>
     </main>
 
@@ -626,7 +791,6 @@
 
         // Global Variables
         let usersCount = 0;
-        const GLOBAL_USERS_COUNT = 50000; // 50 ألف مستخدم حول العالم
 
         // Initialize Background Shapes
         function createGeoShapes() {
@@ -730,13 +894,13 @@
         // Update users count in UI
         function updateUsersCountUI() {
             const usersCountSpan = document.getElementById('users-count');
-            const totalActiveUsers = document.getElementById('total-active-users');
-            const activeUsersCount = document.getElementById('active-users-count');
+            const totalUsersCount = document.getElementById('total-users-count');
+            const trustUsersCount = document.getElementById('trust-users-count');
             
-            // تحديث عدد المستخدمين النشطين
+            // تحديث جميع العناصر
             usersCountSpan.textContent = usersCount;
-            totalActiveUsers.textContent = usersCount;
-            activeUsersCount.textContent = usersCount;
+            totalUsersCount.textContent = usersCount;
+            trustUsersCount.textContent = usersCount;
             
             // تأثير بسيط عند التغيير
             usersCountSpan.classList.add('scale-110');
@@ -929,7 +1093,7 @@
             });
         }
 
-        // تحديث واجهة المستخدم في القائمة الجانبية مع ميزة VIP البسيطة
+        // تحديث واجهة المستخدم في القائمة الجانبية مع ميزة VIP
         function updateSidebarUI(userData) {
             // Hide login button, show user info and logout button
             document.getElementById('auth-section-sidebar').classList.add('hidden');
@@ -941,29 +1105,43 @@
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
             
-            // Get VIP badge element
+            // Get VIP elements
             const vipBadge = document.getElementById('vip-verified-badge');
-            const avatarContainer = document.getElementById('avatar-container');
+            const vipCertificate = document.getElementById('vip-certificate');
+            const avatarGoldFrame = document.getElementById('avatar-gold-frame');
+            const userCard = document.getElementById('user-card');
+            const vipUserInfo = document.getElementById('vip-user-info');
             
-            // Hide VIP badge by default
+            // Hide all VIP indicators by default
             vipBadge.classList.add('hidden');
+            vipCertificate.classList.add('hidden');
+            avatarGoldFrame.classList.add('hidden');
+            userCard.classList.remove('vip-gold-card');
+            vipUserInfo.classList.add('hidden');
             
-            // Add gold frame to avatar if user is VIP
+            // Show VIP indicators only if user is VIP
             if (userData.vip === true) {
                 vipBadge.classList.remove('hidden');
-                avatarContainer.classList.add('vip-gold-frame');
-            } else {
-                avatarContainer.classList.remove('vip-gold-frame');
+                vipCertificate.classList.remove('hidden');
+                avatarGoldFrame.classList.remove('hidden');
+                userCard.classList.add('vip-gold-card');
+                vipUserInfo.classList.remove('hidden');
+                
+                // Add gold frame to avatar
+                avatarGoldFrame.classList.add('vip-gold-frame');
             }
             
             // Apply banned style if user is banned
             if (userData.banned === true) {
-                document.getElementById('user-card').classList.add('banned-user');
-                // Remove VIP frame if banned
-                avatarContainer.classList.remove('vip-gold-frame');
+                userCard.classList.add('banned-user');
+                // Hide VIP indicators if banned
                 vipBadge.classList.add('hidden');
+                vipCertificate.classList.add('hidden');
+                avatarGoldFrame.classList.add('hidden');
+                userCard.classList.remove('vip-gold-card');
+                vipUserInfo.classList.add('hidden');
             } else {
-                document.getElementById('user-card').classList.remove('banned-user');
+                userCard.classList.remove('banned-user');
             }
             
             // Format join date if available
@@ -1073,6 +1251,32 @@
                     setTimeout(() => {
                         ripple.remove();
                     }, 600);
+                });
+            });
+            
+            // Add hover effects to compact social icons
+            document.querySelectorAll('.compact-social-icon').forEach(icon => {
+                icon.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px) scale(1.1)';
+                });
+                icon.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+            
+            // Add animation for hamburger menu
+            const hamburgerBtn = document.getElementById('settings-button');
+            const hamburgerSpans = hamburgerBtn.querySelectorAll('.hamburger-icon span');
+            
+            hamburgerBtn.addEventListener('mouseenter', function() {
+                hamburgerSpans.forEach((span, index) => {
+                    span.style.transform = `translateX(${index % 2 === 0 ? '2px' : '-2px'})`;
+                });
+            });
+            
+            hamburgerBtn.addEventListener('mouseleave', function() {
+                hamburgerSpans.forEach(span => {
+                    span.style.transform = 'translateX(0)';
                 });
             });
         });
