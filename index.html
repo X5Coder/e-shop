@@ -424,6 +424,49 @@
             100% { transform: rotateY(360deg); }
         }
 
+        /* Users Count Badge */
+        .users-count-badge {
+            background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
+            color: white;
+            font-weight: bold;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border: 1px solid rgba(0, 102, 204, 0.3);
+            box-shadow: 0 3px 10px rgba(0, 102, 204, 0.3);
+            animation: count-pulse 3s infinite;
+        }
+
+        @keyframes count-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+
+        /* Live Update Animation */
+        .live-update {
+            position: relative;
+        }
+
+        .live-update::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            right: -2px;
+            width: 8px;
+            height: 8px;
+            background: #00ff00;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
         /* Banned User Style */
         .banned-user {
             opacity: 0.5;
@@ -507,6 +550,12 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
+            <!-- Users Count Badge -->
+            <div id="users-count-badge" class="users-count-badge hidden live-update">
+                <i class="fas fa-users text-xs"></i>
+                <span id="users-count">0</span>
+            </div>
+            
             <!-- VIP Status Indicator in Header -->
             <div id="header-vip-badge" class="vip-badge hidden">
                 <i class="fas fa-crown text-[8px]"></i> VIP
@@ -529,6 +578,40 @@
         <div class="flex justify-between items-center mb-1">
             <h2 class="text-xl font-black tracking-tight text-blue-500">الإعدادات</h2>
             <button onclick="toggleSidebar()" class="btn-press w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"><i class="fas fa-xmark text-sm"></i></button>
+        </div>
+
+        <!-- Site Statistics Section -->
+        <div class="mb-4 p-3 bg-white/5 rounded-xl border border-white/10">
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-chart-line text-blue-500 text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold">إحصائيات الموقع</p>
+                        <p class="text-[10px] text-gray-500">تحديث مباشر</p>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <div class="text-lg font-bold text-blue-500" id="sidebar-users-count">0</div>
+                    <p class="text-[9px] text-gray-500">مستخدم نشط</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 mt-3">
+                <div class="text-center p-2 bg-white/5 rounded-lg">
+                    <div class="text-lg font-bold text-green-500" id="vip-count">0</div>
+                    <p class="text-[9px] text-gray-500">مستخدم VIP</p>
+                </div>
+                <div class="text-center p-2 bg-white/5 rounded-lg">
+                    <div class="text-lg font-bold" id="normal-count">0</div>
+                    <p class="text-[9px] text-gray-500">مستخدم عادي</p>
+                </div>
+            </div>
+            
+            <div class="mt-3 pt-3 border-t border-white/10">
+                <p class="text-[10px] text-gray-500 text-center">آخر تحديث: <span id="last-update-time">الآن</span></p>
+            </div>
         </div>
 
         <!-- User Section (Only visible when logged in) -->
@@ -693,9 +776,9 @@
                 <img src="https://ui-avatars.com/api/?name=A&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <img src="https://ui-avatars.com/api/?name=B&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <img src="https://ui-avatars.com/api/?name=C&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
-                <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">+1k</div>
+                <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">+<span id="total-users-count">1k</span></div>
             </div>
-            <h4 class="text-lg font-bold mb-2">انضم إلى 50,000+ مستخدم</h4>
+            <h4 class="text-lg font-bold mb-2">انضم إلى <span id="trust-users-count">50,000</span>+ مستخدم</h4>
             <p class="text-xs text-gray-500">نحن نقدم أفضل الخدمات الرقمية بأعلى معايير الأمان والجودة العالمية</p>
         </div>
     </main>
@@ -716,6 +799,11 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+
+        // Global Variables
+        let usersCount = 0;
+        let vipUsersCount = 0;
+        let normalUsersCount = 0;
 
         // Initialize Background Shapes
         function createGeoShapes() {
@@ -745,6 +833,8 @@
                 initScrollReveal();
                 // Check auth state when page loads
                 checkAuthState();
+                // Start listening for users count updates
+                startUsersCountListener();
             }, 2500);
         });
 
@@ -793,6 +883,77 @@
             const overlay = document.getElementById('sidebar-overlay');
             sidebar.classList.toggle('active');
             overlay.classList.toggle('hidden');
+        }
+
+        // Start listening for users count updates from Firebase
+        function startUsersCountListener() {
+            const usersRef = database.ref('users');
+            
+            usersRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const users = snapshot.val();
+                    const usersArray = Object.values(users);
+                    
+                    // Calculate counts
+                    usersCount = usersArray.length;
+                    vipUsersCount = usersArray.filter(user => user.vip === true).length;
+                    normalUsersCount = usersCount - vipUsersCount;
+                    
+                    // Update UI
+                    updateUsersCountUI();
+                    
+                    // Update timestamp
+                    updateLastUpdateTime();
+                } else {
+                    // No users yet
+                    usersCount = 0;
+                    vipUsersCount = 0;
+                    normalUsersCount = 0;
+                    updateUsersCountUI();
+                }
+            }, (error) => {
+                console.error('Error listening to users count:', error);
+            });
+        }
+
+        // Update users count in UI
+        function updateUsersCountUI() {
+            // Update header badge
+            const usersCountBadge = document.getElementById('users-count-badge');
+            const usersCountSpan = document.getElementById('users-count');
+            
+            if (usersCount > 0) {
+                usersCountBadge.classList.remove('hidden');
+                usersCountSpan.textContent = usersCount;
+            } else {
+                usersCountBadge.classList.add('hidden');
+            }
+            
+            // Update sidebar count
+            document.getElementById('sidebar-users-count').textContent = usersCount;
+            document.getElementById('vip-count').textContent = vipUsersCount;
+            document.getElementById('normal-count').textContent = normalUsersCount;
+            
+            // Update trust section
+            document.getElementById('total-users-count').textContent = usersCount > 1000 ? '1k+' : usersCount;
+            document.getElementById('trust-users-count').textContent = usersCount > 1000 ? '50,000' : usersCount;
+            
+            // Add animation for count change
+            usersCountSpan.classList.add('scale-110');
+            setTimeout(() => {
+                usersCountSpan.classList.remove('scale-110');
+            }, 300);
+        }
+
+        // Update last update time
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ar-SA', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('last-update-time').textContent = timeString;
         }
 
         // Show/Hide Banned Dialog
@@ -998,8 +1159,9 @@
             const vipFeatures = document.getElementById('vip-features');
             const userCard = document.getElementById('user-card');
             
-            // التحقق من قيمة vip - **هذا هو التصحيح الرئيسي**
+            // **التصحيح الأساسي: التحقق من قيمة vip بشكل صحيح**
             if (userData.vip === true) {
+                console.log('User is VIP - Showing VIP badges');
                 // إظهار علامة VIP في الشريط الجانبي
                 vipBadge.classList.remove('hidden');
                 
@@ -1015,6 +1177,7 @@
                 // إضافة تنسيق خاص لبطاقة المستخدم VIP
                 userCard.classList.add('vip-user-card');
             } else {
+                console.log('User is NOT VIP - Hiding VIP badges');
                 // إخفاء جميع علامات VIP
                 vipBadge.classList.add('hidden');
                 headerVipBadge.classList.add('hidden');
