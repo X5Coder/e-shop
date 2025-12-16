@@ -424,7 +424,7 @@
             100% { transform: rotateY(360deg); }
         }
 
-        /* Users Count Badge */
+        /* Users Count Badge - بسيط */
         .users-count-badge {
             background: linear-gradient(135deg, #0066cc 0%, #0099ff 100%);
             color: white;
@@ -437,34 +437,6 @@
             gap: 5px;
             border: 1px solid rgba(0, 102, 204, 0.3);
             box-shadow: 0 3px 10px rgba(0, 102, 204, 0.3);
-            animation: count-pulse 3s infinite;
-        }
-
-        @keyframes count-pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-        }
-
-        /* Live Update Animation */
-        .live-update {
-            position: relative;
-        }
-
-        .live-update::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            right: -2px;
-            width: 8px;
-            height: 8px;
-            background: #00ff00;
-            border-radius: 50%;
-            animation: blink 1.5s infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
         }
 
         /* Banned User Style */
@@ -550,15 +522,10 @@
             E-SHOP <span class="text-blue-600">PRO</span>
         </div>
         <div class="flex gap-3 items-center">
-            <!-- Users Count Badge -->
-            <div id="users-count-badge" class="users-count-badge hidden live-update">
-                <i class="fas fa-users text-xs"></i>
+            <!-- Users Count Badge بجانب الإعدادات -->
+            <div id="users-count-badge" class="users-count-badge">
+                <i class="fas fa-user text-xs"></i>
                 <span id="users-count">0</span>
-            </div>
-            
-            <!-- VIP Status Indicator in Header -->
-            <div id="header-vip-badge" class="vip-badge hidden">
-                <i class="fas fa-crown text-[8px]"></i> VIP
             </div>
             
             <!-- Hamburger Menu Icon -->
@@ -580,40 +547,6 @@
             <button onclick="toggleSidebar()" class="btn-press w-8 h-8 rounded-full bg-white/5 flex items-center justify-center"><i class="fas fa-xmark text-sm"></i></button>
         </div>
 
-        <!-- Site Statistics Section -->
-        <div class="mb-4 p-3 bg-white/5 rounded-xl border border-white/10">
-            <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 bg-blue-600/20 rounded-lg flex items-center justify-center">
-                        <i class="fas fa-chart-line text-blue-500 text-sm"></i>
-                    </div>
-                    <div>
-                        <p class="text-xs font-bold">إحصائيات الموقع</p>
-                        <p class="text-[10px] text-gray-500">تحديث مباشر</p>
-                    </div>
-                </div>
-                <div class="text-left">
-                    <div class="text-lg font-bold text-blue-500" id="sidebar-users-count">0</div>
-                    <p class="text-[9px] text-gray-500">مستخدم نشط</p>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-2 mt-3">
-                <div class="text-center p-2 bg-white/5 rounded-lg">
-                    <div class="text-lg font-bold text-green-500" id="vip-count">0</div>
-                    <p class="text-[9px] text-gray-500">مستخدم VIP</p>
-                </div>
-                <div class="text-center p-2 bg-white/5 rounded-lg">
-                    <div class="text-lg font-bold" id="normal-count">0</div>
-                    <p class="text-[9px] text-gray-500">مستخدم عادي</p>
-                </div>
-            </div>
-            
-            <div class="mt-3 pt-3 border-t border-white/10">
-                <p class="text-[10px] text-gray-500 text-center">آخر تحديث: <span id="last-update-time">الآن</span></p>
-            </div>
-        </div>
-
         <!-- User Section (Only visible when logged in) -->
         <div id="user-info-sidebar" class="hidden mb-4">
             <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
@@ -632,17 +565,8 @@
                         </span>
                     </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
-                    <p id="user-status" class="text-[9px] text-gray-500 mt-2"></p>
+                    <p id="user-status" class="text-[9px] text-gray-500 mt-2">الحالة: نشط</p>
                     <p id="user-join-date" class="text-[9px] text-gray-500 mt-1"></p>
-                    <!-- Special Features for VIP Users -->
-                    <div id="vip-features" class="hidden mt-3 pt-2 border-t border-white/5">
-                        <p class="text-[9px] text-yellow-500 font-bold">مزايا VIP:</p>
-                        <div class="flex flex-wrap gap-1 mt-1">
-                            <span class="text-[7px] bg-yellow-500/10 text-yellow-400 px-1 py-0.5 rounded">خصومات حصرية</span>
-                            <span class="text-[7px] bg-yellow-500/10 text-yellow-400 px-1 py-0.5 rounded">دعم فوري</span>
-                            <span class="text-[7px] bg-yellow-500/10 text-yellow-400 px-1 py-0.5 rounded">محتوى متميز</span>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -776,9 +700,9 @@
                 <img src="https://ui-avatars.com/api/?name=A&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <img src="https://ui-avatars.com/api/?name=B&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
                 <img src="https://ui-avatars.com/api/?name=C&background=random" class="w-9 h-9 rounded-full border-2 border-zinc-900">
-                <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">+<span id="total-users-count">1k</span></div>
+                <div class="w-9 h-9 rounded-full bg-blue-600 border-2 border-zinc-900 flex items-center justify-center text-[9px] font-bold">+<span id="total-users-count">0</span></div>
             </div>
-            <h4 class="text-lg font-bold mb-2">انضم إلى <span id="trust-users-count">50,000</span>+ مستخدم</h4>
+            <h4 class="text-lg font-bold mb-2">انضم إلى <span id="trust-users-count">0</span>+ مستخدم</h4>
             <p class="text-xs text-gray-500">نحن نقدم أفضل الخدمات الرقمية بأعلى معايير الأمان والجودة العالمية</p>
         </div>
     </main>
@@ -802,8 +726,6 @@
 
         // Global Variables
         let usersCount = 0;
-        let vipUsersCount = 0;
-        let normalUsersCount = 0;
 
         // Initialize Background Shapes
         function createGeoShapes() {
@@ -892,68 +814,34 @@
             usersRef.on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const users = snapshot.val();
-                    const usersArray = Object.values(users);
-                    
-                    // Calculate counts
-                    usersCount = usersArray.length;
-                    vipUsersCount = usersArray.filter(user => user.vip === true).length;
-                    normalUsersCount = usersCount - vipUsersCount;
-                    
-                    // Update UI
-                    updateUsersCountUI();
-                    
-                    // Update timestamp
-                    updateLastUpdateTime();
+                    usersCount = Object.keys(users).length;
                 } else {
-                    // No users yet
                     usersCount = 0;
-                    vipUsersCount = 0;
-                    normalUsersCount = 0;
-                    updateUsersCountUI();
                 }
+                
+                // Update UI
+                updateUsersCountUI();
             }, (error) => {
                 console.error('Error listening to users count:', error);
             });
         }
 
-        // Update users count in UI
+        // Update users count in UI - تم التبسيط
         function updateUsersCountUI() {
-            // Update header badge
-            const usersCountBadge = document.getElementById('users-count-badge');
             const usersCountSpan = document.getElementById('users-count');
+            const totalUsersCount = document.getElementById('total-users-count');
+            const trustUsersCount = document.getElementById('trust-users-count');
             
-            if (usersCount > 0) {
-                usersCountBadge.classList.remove('hidden');
-                usersCountSpan.textContent = usersCount;
-            } else {
-                usersCountBadge.classList.add('hidden');
-            }
+            // تحديث جميع العناصر
+            usersCountSpan.textContent = usersCount;
+            totalUsersCount.textContent = usersCount;
+            trustUsersCount.textContent = usersCount;
             
-            // Update sidebar count
-            document.getElementById('sidebar-users-count').textContent = usersCount;
-            document.getElementById('vip-count').textContent = vipUsersCount;
-            document.getElementById('normal-count').textContent = normalUsersCount;
-            
-            // Update trust section
-            document.getElementById('total-users-count').textContent = usersCount > 1000 ? '1k+' : usersCount;
-            document.getElementById('trust-users-count').textContent = usersCount > 1000 ? '50,000' : usersCount;
-            
-            // Add animation for count change
+            // تأثير بسيط عند التغيير
             usersCountSpan.classList.add('scale-110');
             setTimeout(() => {
                 usersCountSpan.classList.remove('scale-110');
             }, 300);
-        }
-
-        // Update last update time
-        function updateLastUpdateTime() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('ar-SA', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('last-update-time').textContent = timeString;
         }
 
         // Show/Hide Banned Dialog
@@ -1140,7 +1028,7 @@
             });
         }
 
-        // Update Sidebar UI with user data - تم التعديل هنا
+        // Update Sidebar UI with user data - **تم التصحيح هنا**
         function updateSidebarUI(userData) {
             // Hide login button, show user info and logout button
             document.getElementById('auth-section-sidebar').classList.add('hidden');
@@ -1152,42 +1040,34 @@
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
             
+            // **التصحيح الأساسي: إخفاء علامة VIP من الهيدر (تم إزالتها أصلاً)**
+            // لا يوجد عنصر header-vip-badge في الهيدر بعد الآن
+            
             // Get VIP badge elements
             const vipBadge = document.getElementById('vip-badge');
-            const headerVipBadge = document.getElementById('header-vip-badge');
             const avatarVipCrown = document.getElementById('avatar-vip-crown');
-            const vipFeatures = document.getElementById('vip-features');
             const userCard = document.getElementById('user-card');
             
-            // **التصحيح الأساسي: التحقق من قيمة vip بشكل صحيح**
+            // **التصحيح: التحقق من قيمة vip بشكل صحيح**
+            console.log('User VIP status:', userData.vip, 'Type:', typeof userData.vip);
+            
             if (userData.vip === true) {
-                console.log('User is VIP - Showing VIP badges');
+                console.log('Showing VIP badges for user');
                 // إظهار علامة VIP في الشريط الجانبي
                 vipBadge.classList.remove('hidden');
-                
-                // إظهار علامة VIP في الهيدر
-                headerVipBadge.classList.remove('hidden');
                 
                 // إظهار التاج على الصورة
                 avatarVipCrown.classList.remove('hidden');
                 
-                // إظهار مزايا VIP
-                vipFeatures.classList.remove('hidden');
-                
                 // إضافة تنسيق خاص لبطاقة المستخدم VIP
                 userCard.classList.add('vip-user-card');
             } else {
-                console.log('User is NOT VIP - Hiding VIP badges');
+                console.log('Hiding VIP badges for user');
                 // إخفاء جميع علامات VIP
                 vipBadge.classList.add('hidden');
-                headerVipBadge.classList.add('hidden');
                 avatarVipCrown.classList.add('hidden');
-                vipFeatures.classList.add('hidden');
                 userCard.classList.remove('vip-user-card');
             }
-            
-            // Show user status
-            document.getElementById('user-status').textContent = `الحالة: ${userData.banned ? 'محظور' : 'نشط'}`;
             
             // Apply banned style if user is banned
             if (userData.banned) {
@@ -1221,9 +1101,6 @@
             const authText = document.getElementById('auth-button-text');
             authText.textContent = 'تسجيل الدخول عبر جوجل';
             authButton.disabled = false;
-            
-            // إخفاء علامة VIP من الهيدر
-            document.getElementById('header-vip-badge').classList.add('hidden');
             
             // Remove notification dot from settings icon
             document.getElementById('settings-button').classList.remove('has-notification');
