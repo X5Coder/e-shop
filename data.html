@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>E-Shop Pro | الكتب الإلكترونية</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary: #0066cc;
+            --secondary: #cc3333;
+            --bg-dark: #0a0a0a;
+            --text-dark: #f5f5f5;
+            --transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            overflow-x: hidden;
+            transition: var(--transition);
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        /* Geometric Background */
+        .geo-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0.15;
+        }
+
+        .geo-shape {
+            position: absolute;
+            border: 2px solid currentColor;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0.2; }
+            50% { transform: translateY(-100px) rotate(180deg); opacity: 0.5; }
+            100% { transform: translateY(0) rotate(360deg); opacity: 0.2; }
+        }
+
+        /* Card Hover Effects */
+        .book-card {
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transform-origin: center;
+            position: relative;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .book-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-color: rgba(0, 102, 204, 0.3);
+        }
+
+        .book-card:active {
+            transform: translateY(-2px) scale(0.98);
+            transition: all 0.2s ease;
+        }
+
+        /* Price Styling */
+        .old-price {
+            text-decoration: line-through;
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .new-price {
+            color: #00cc66;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Discount Badge */
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: linear-gradient(135deg, #cc3333, #ff6666);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 3px 10px rgba(204, 51, 51, 0.3);
+        }
+
+        /* Button Press Effect */
+        .btn-press {
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-press::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .btn-press:active::after {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(30, 30);
+                opacity: 0;
+            }
+        }
+
+        /* Glassmorphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 50;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Loading Animation */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #0066cc;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Image Gallery */
+        .image-gallery {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .book-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .book-image:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- Geometric Background -->
+    <div class="geo-bg" id="geo-bg"></div>
+
+    <!-- Header -->
+    <header class="header px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='index.html'" class="btn-press w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 active:scale-90 transition-all border border-white/10">
+                <i class="fas fa-arrow-right text-white"></i>
+            </button>
+            <div class="text-xl font-black tracking-tighter">
+                E-SHOP <span class="text-blue-600">PRO</span>
+            </div>
+        </div>
+        
+        <div class="text-lg font-bold text-blue-500">
+            الكتب الإلكترونية
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-8 px-4 mx-auto">
+        <!-- Page Title -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl font-extrabold mb-2">المكتبة الرقمية</h1>
+            <p class="text-gray-400">اختر من مجموعة واسعة من الكتب الإلكترونية المميزة</p>
+        </div>
+
+        <!-- Books Grid -->
+        <div id="books-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- سيتم إضافة الكتب ديناميكياً من Firebase -->
+            <div class="text-center py-10">
+                <div class="loading-spinner mx-auto mb-4"></div>
+                <p class="text-gray-400">جاري تحميل الكتب...</p>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-16">
+            <div class="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-blue-500/30">
+                <i class="fas fa-book-open text-blue-500 text-3xl"></i>
+            </div>
+            <h2 class="text-xl font-bold mb-3">لا توجد كتب متاحة حالياً</h2>
+            <p class="text-gray-400 mb-6">سيتم إضافة كتب جديدة قريباً</p>
+        </div>
+    </main>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4efVo2ak3jhTslz-jFvHAkhEt-t9SVOQ",
+            authDomain: "e-shop-aa5ea.firebaseapp.com",
+            databaseURL: "https://e-shop-aa5ea-default-rtdb.firebaseio.com",
+            projectId: "e-shop-aa5ea",
+            storageBucket: "e-shop-aa5ea.firebasestorage.app",
+            messagingSenderId: "751567638938",
+            appId: "1:751567638938:android:63555c7081ec50c6dcaa23"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Initialize Background Shapes
+        function createGeoShapes() {
+            const bg = document.getElementById('geo-bg');
+            const colors = ['#0066cc', '#cc3333', '#ffffff', '#333333'];
+            for(let i=0; i<15; i++) {
+                const shape = document.createElement('div');
+                shape.className = 'geo-shape';
+                const size = Math.random() * 100 + 50;
+                shape.style.width = size + 'px';
+                shape.style.height = size + 'px';
+                shape.style.left = Math.random() * 100 + '%';
+                shape.style.top = Math.random() * 100 + '%';
+                shape.style.color = colors[Math.floor(Math.random() * colors.length)];
+                shape.style.borderRadius = Math.random() > 0.5 ? '0px' : '20%';
+                shape.style.animationDelay = (Math.random() * 5) + 's';
+                bg.appendChild(shape);
+            }
+        }
+
+        // Load Books from Firebase
+        function loadBooks() {
+            const booksRef = database.ref('books');
+            const booksContainer = document.getElementById('books-container');
+            const emptyState = document.getElementById('empty-state');
+            
+            booksRef.on('value', (snapshot) => {
+                booksContainer.innerHTML = '';
+                
+                if (snapshot.exists()) {
+                    const books = snapshot.val();
+                    const bookIds = Object.keys(books);
+                    
+                    if (bookIds.length === 0) {
+                        booksContainer.classList.add('hidden');
+                        emptyState.classList.remove('hidden');
+                        return;
+                    }
+                    
+                    emptyState.classList.add('hidden');
+                    
+                    bookIds.forEach(bookId => {
+                        const book = books[bookId];
+                        const bookElement = createBookElement(book, bookId);
+                        booksContainer.appendChild(bookElement);
+                    });
+                } else {
+                    booksContainer.classList.add('hidden');
+                    emptyState.classList.remove('hidden');
+                }
+            }, (error) => {
+                console.error('Error loading books:', error);
+                booksContainer.innerHTML = `
+                    <div class="col-span-2 text-center py-10">
+                        <div class="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-red-500/30">
+                            <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">خطأ في تحميل البيانات</h3>
+                        <p class="text-gray-400">تعذر تحميل الكتب. يرجى المحاولة مرة أخرى.</p>
+                    </div>
+                `;
+            });
+        }
+
+        // Create Book Card Element
+        function createBookElement(book, bookId) {
+            // حساب نسبة الخصم
+            const discountPercentage = book.price && book.priceReal ? 
+                Math.round(((book.price - book.priceReal) / book.price) * 100) : 0;
+            
+            const bookDiv = document.createElement('div');
+            bookDiv.className = 'book-card rounded-2xl p-4 cursor-pointer';
+            bookDiv.onclick = () => openBookDetails(bookId);
+            
+            bookDiv.innerHTML = `
+                ${discountPercentage > 0 ? `<div class="discount-badge">خصم ${discountPercentage}%</div>` : ''}
+                
+                <div class="image-gallery">
+                    <img src="${book.img1 || 'https://via.placeholder.com/300x400/0066cc/ffffff?text=Book+Cover'}" 
+                         alt="${book.name}" 
+                         class="book-image">
+                    <img src="${book.img2 || 'https://via.placeholder.com/300x400/0066cc/ffffff?text=Book+Preview'}" 
+                         alt="${book.name} Preview" 
+                         class="book-image">
+                </div>
+                
+                <h3 class="text-lg font-bold mb-2 truncate">${book.name || 'كتاب بدون عنوان'}</h3>
+                
+                <p class="text-sm text-gray-400 mb-3 line-clamp-2 h-10">${book.dec || 'لا يوجد وصف متاح'}</p>
+                
+                <div class="flex justify-between items-center mt-4">
+                    <div class="flex items-center gap-2">
+                        ${book.price ? `
+                            <span class="old-price">${formatPrice(book.price)}</span>
+                            <span class="new-price">${formatPrice(book.priceReal || book.price)}</span>
+                        ` : `
+                            <span class="new-price">${formatPrice(book.priceReal || 'غير متاح')}</span>
+                        `}
+                    </div>
+                    
+                    <button class="btn-press px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold active:scale-95 transition-all">
+                        شراء الآن
+                    </button>
+                </div>
+            `;
+            
+            return bookDiv;
+        }
+
+        // Format Price
+        function formatPrice(price) {
+            if (!price) return '0 ريال';
+            const num = parseInt(price);
+            if (isNaN(num)) return price;
+            return num.toLocaleString('ar-SA') + ' ريال';
+        }
+
+        // Open Book Details (Redirect to pay.html with book ID)
+        function openBookDetails(bookId) {
+            window.location.href = `pay.html?book=${bookId}`;
+        }
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', () => {
+            createGeoShapes();
+            loadBooks();
+        });
+
+        // Prevent text dragging
+        document.addEventListener('dragstart', (e) => e.preventDefault());
+    </script>
+</body>
+</html>
