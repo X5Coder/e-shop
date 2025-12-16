@@ -327,21 +327,6 @@
             background-color: #0066cc;
         }
 
-        /* VIP Badge */
-        .vip-badge {
-            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-            color: #000;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 10px;
-            margin-right: 5px;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);
-        }
-
         /* User Counter in Header */
         .user-counter {
             display: flex;
@@ -446,6 +431,21 @@
             color: white;
             box-shadow: 0 2px 6px rgba(0, 102, 204, 0.4);
         }
+
+        /* Banned Badge in Sidebar */
+        .banned-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: linear-gradient(135deg, #ff3333, #cc0000);
+            border-radius: 50%;
+            margin-right: 5px;
+            font-size: 10px;
+            color: white;
+            box-shadow: 0 2px 6px rgba(255, 51, 51, 0.4);
+        }
     </style>
 </head>
 <body oncontextmenu="return false;">
@@ -532,6 +532,9 @@
                         <h3 id="user-name" class="font-bold text-lg"></h3>
                         <span id="vip-badge" class="verified-badge hidden">
                             <i class="fas fa-check"></i>
+                        </span>
+                        <span id="banned-badge" class="banned-badge hidden">
+                            <i class="fas fa-ban"></i>
                         </span>
                     </div>
                     <p id="user-email" class="text-xs text-blue-400 mt-1"></p>
@@ -946,13 +949,13 @@
                             photoURL: user.photoURL || existingData.photoURL
                         };
                         
-                        // Check if user is banned
-                        if (userData.banned) {
+                        // Check if user is banned (ONLY if banned: true)
+                        if (userData.banned === true) {
                             showBannedModal();
                             return;
+                        } else {
+                            showToast('مرحباً بعودتك!', 'success');
                         }
-                        
-                        showToast('مرحباً بعودتك!', 'success');
                     }
                     
                     // Update user data
@@ -981,8 +984,8 @@
                             if (snapshot.exists()) {
                                 const userData = snapshot.val();
                                 
-                                // Check if user is banned
-                                if (userData.banned) {
+                                // Check if user is banned (ONLY if banned: true)
+                                if (userData.banned === true) {
                                     showBannedModal();
                                     return;
                                 }
@@ -1015,7 +1018,7 @@
             document.getElementById('user-email').textContent = userData.email;
             document.getElementById('user-avatar').src = userData.photoURL;
             
-            // Show verified badge if user is VIP
+            // Show verified badge if user is VIP (ONLY if vip: true)
             const vipBadge = document.getElementById('vip-badge');
             if (userData.vip === true) {
                 vipBadge.classList.remove('hidden');
@@ -1028,12 +1031,15 @@
                 document.getElementById('user-level').classList.add('text-blue-400');
             }
             
-            // Update user status
-            if (userData.banned) {
+            // Show banned badge if user is banned (ONLY if banned: true)
+            const bannedBadge = document.getElementById('banned-badge');
+            if (userData.banned === true) {
+                bannedBadge.classList.remove('hidden');
                 document.getElementById('user-status').textContent = "محظور";
                 document.getElementById('user-status').classList.remove('text-green-400');
                 document.getElementById('user-status').classList.add('text-red-400');
             } else {
+                bannedBadge.classList.add('hidden');
                 document.getElementById('user-status').textContent = "نشط";
                 document.getElementById('user-status').classList.remove('text-red-400');
                 document.getElementById('user-status').classList.add('text-green-400');
