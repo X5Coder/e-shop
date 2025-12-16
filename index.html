@@ -366,7 +366,7 @@
             background-color: #0066cc;
         }
 
-        /* VIP Badge - معدل */
+        /* VIP Badge - سيظهر فقط للمستخدمين VIP */
         .vip-badge {
             background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
             color: #000;
@@ -552,7 +552,7 @@
             <div id="user-card" class="flex items-center gap-3 bg-white/5 p-4 rounded-xl border border-white/10">
                 <div class="relative">
                     <img id="user-avatar" class="w-14 h-14 rounded-full border-2 border-blue-600 shadow-xl shadow-blue-600/20">
-                    <!-- VIP Crown on Avatar for VIP Users -->
+                    <!-- VIP Crown on Avatar - سيظهر فقط للمستخدمين VIP -->
                     <div id="avatar-vip-crown" class="absolute -top-1 -right-1 w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center hidden">
                         <i class="fas fa-crown text-[8px] text-black"></i>
                     </div>
@@ -560,6 +560,7 @@
                 <div class="text-right flex-1">
                     <div class="flex items-center justify-end gap-1 mb-1">
                         <h3 id="user-name" class="font-bold text-lg"></h3>
+                        <!-- VIP Badge - سيظهر فقط للمستخدمين VIP -->
                         <span id="vip-badge" class="vip-badge hidden">
                             <i class="fas fa-crown text-[8px] vip-crown"></i> VIP
                         </span>
@@ -1028,7 +1029,7 @@
             });
         }
 
-        // **تم التصحيح هنا - إزالة علامة VIP الثابتة**
+        // تحديث واجهة المستخدم في القائمة الجانبية
         function updateSidebarUI(userData) {
             // Hide login button, show user info and logout button
             document.getElementById('auth-section-sidebar').classList.add('hidden');
@@ -1045,28 +1046,16 @@
             const avatarVipCrown = document.getElementById('avatar-vip-crown');
             const userCard = document.getElementById('user-card');
             
-            // **إزالة علامة VIP الثابتة - التحقق الصحيح**
-            console.log('VIP Status Check:', {
-                vipValue: userData.vip,
-                type: typeof userData.vip,
-                isTrue: userData.vip === true,
-                isFalse: userData.vip === false
-            });
-            
-            // إخفاء جميع علامات VIP أولاً (الحالة الافتراضية)
+            // إخفاء جميع علامات VIP بشكل افتراضي
             vipBadge.classList.add('hidden');
             avatarVipCrown.classList.add('hidden');
             userCard.classList.remove('vip-user-card');
             
-            // إظهار علامة VIP فقط إذا كانت القيمة true
+            // إظهار علامات VIP فقط إذا كان المستخدم فعلاً VIP
             if (userData.vip === true) {
-                console.log('Showing VIP badges for VIP user');
                 vipBadge.classList.remove('hidden');
                 avatarVipCrown.classList.remove('hidden');
                 userCard.classList.add('vip-user-card');
-            } else {
-                console.log('Hiding VIP badges for normal user');
-                // لا تظهر أي علامات VIP
             }
             
             // Apply banned style if user is banned
