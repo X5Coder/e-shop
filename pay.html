@@ -8,12 +8,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
     
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
     <style>
         :root {
             --primary: #0066cc;
             --secondary: #cc3333;
             --bg-dark: #0a0a0a;
             --text-dark: #f5f5f5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
         }
 
         body {
@@ -27,36 +35,838 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .step-line {
+            width: 60px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .step.active .step-circle {
+            background: var(--primary);
+            color: white;
+        }
+
+        .step.completed .step-circle {
+            background: var(--success);
+            color: white;
+        }
+
+        .step.pending .step-circle {
+            background: rgba(255, 255, 255, 0.1);
+            color: #999;
+        }
+
+        .step-label {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .step.active .step-label {
+            color: var(--primary);
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .status-approved {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .copy-btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            opacity: 0.8;
+        }
+
+        .copy-btn.copied {
+            background: var(--success) !important;
+        }
+
+        .countdown-timer {
+            font-family: monospace;
+            font-size: 1.2em;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .receipt {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .receipt-item:last-child {
+            border-bottom: none;
+        }
+
+        .receipt-total {
+            font-weight: bold;
+            color: var(--primary);
+            font-size: 1.1em;
+        }
+
+        .hidden-section {
+            overflow: hidden;
+            max-height: 0;
+            opacity: 0;
+            transition: all 0.5s ease;
+        }
+
+        .hidden-section.show {
+            max-height: 500px;
+            opacity: 1;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <header class="glass px-4 py-3 flex items-center gap-3">
-        <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5">
+    <header class="glass px-4 py-3 flex items-center gap-3 sticky top-0 z-50">
+        <button onclick="window.history.back()" class="w-10 h-10 flex items-center justify-center rounded-2xl bg-white/5 hover:bg-white/10 transition-all">
             <i class="fas fa-arrow-right text-white"></i>
         </button>
-        <h1 class="text-xl font-bold">اكمال عملية الشراء</h1>
+        <h1 class="text-xl font-bold flex-1">اكمال عملية الشراء</h1>
+        <div id="order-status" class="hidden">
+            <!-- سيتم تعبئة حالة الطلب هنا -->
+        </div>
     </header>
 
     <!-- Main Content -->
-    <main class="p-4 max-w-md mx-auto">
-        <div class="glass rounded-2xl p-6 text-center">
-            <div class="w-20 h-20 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-blue-500/30">
-                <i class="fas fa-shopping-cart text-blue-500 text-3xl"></i>
+    <main class="p-4 max-w-md mx-auto" id="main-content">
+        <!-- Step Indicators -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">
+                <div class="step-circle">1</div>
+                <div class="step-label">المعلومات</div>
             </div>
+            <div class="step-line"></div>
+            <div class="step pending" id="step2">
+                <div class="step-circle">2</div>
+                <div class="step-label">الدفع</div>
+            </div>
+            <div class="step-line"></div>
+            <div class="step pending" id="step3">
+                <div class="step-circle">3</div>
+                <div class="step-label">التأكيد</div>
+            </div>
+        </div>
+
+        <!-- Section 1: Customer Information -->
+        <div id="section-info" class="glass rounded-2xl p-6 mb-4">
+            <h2 class="text-xl font-bold mb-6 text-center">معلومات العميل</h2>
             
-            <h2 class="text-xl font-bold mb-4">صفحة الدفع</h2>
-            <p class="text-gray-400 mb-6">سيتم إضافة تفاصيل الدفع هنا لاحقاً</p>
-            
-            <div class="space-y-3">
-                <button onclick="window.location.href='data.html'" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold">
-                    العودة إلى الكتب
-                </button>
-                <button onclick="window.location.href='index.html'" class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold">
-                    العودة للرئيسية
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">الاسم بالكامل</label>
+                    <input type="text" id="customer-name" 
+                           class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                           placeholder="أدخل اسمك بالكامل">
+                </div>
+                
+                <div>
+                    <label class="block text-sm text-gray-400 mb-2">رقم الهاتف</label>
+                    <input type="tel" id="customer-phone" 
+                           class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                           placeholder="أدخل رقم هاتفك">
+                </div>
+                
+                <button onclick="showPaymentSection()" 
+                        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold mt-6 transition-all">
+                    التالي إلى الدفع
                 </button>
             </div>
         </div>
+
+        <!-- Section 2: Payment Information -->
+        <div id="section-payment" class="hidden-section">
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-bold mb-6 text-center">تفاصيل الدفع</h2>
+                
+                <!-- Book Details -->
+                <div class="mb-6 p-4 bg-white/5 rounded-xl">
+                    <h3 class="font-bold mb-2" id="book-title">كتاب المبرمج المحترف</h3>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">السعر:</span>
+                        <span class="font-bold text-blue-400" id="book-price">50 جنيه</span>
+                    </div>
+                </div>
+                
+                <!-- Payment Instructions -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold">تعليمات الدفع</h3>
+                        <span class="text-xs text-gray-400">رقم ثابت للدفع</span>
+                    </div>
+                    
+                    <div class="receipt mb-4">
+                        <div class="receipt-item">
+                            <span>رقم الحساب:</span>
+                            <div class="flex items-center gap-2">
+                                <span id="account-number" class="font-mono">01009341792</span>
+                                <button onclick="copyToClipboard('01009341792')" 
+                                        class="copy-btn w-8 h-8 flex items-center justify-center bg-white/5 rounded-lg">
+                                    <i class="fas fa-copy text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-item">
+                            <span>المبلغ المطلوب:</span>
+                            <span id="payment-amount" class="font-bold">50 جنيه</span>
+                        </div>
+                        
+                        <div class="receipt-item">
+                            <span>نوع التحويل:</span>
+                            <span>تحويل فوري</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-900/20 border border-blue-500/30 rounded-xl p-4 mb-4">
+                        <p class="text-sm">
+                            <i class="fas fa-info-circle text-blue-400 mr-2"></i>
+                            يجب تحويل المبلغ بالضبط كما هو موضح أعلاه إلى الرقم 
+                            <span class="font-bold">01009341792</span>
+                            ثم تأكيد العملية أدناه
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Countdown Timer -->
+                <div class="mb-6 text-center">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/5 rounded-xl">
+                        <i class="fas fa-clock text-blue-400"></i>
+                        <span class="text-sm text-gray-400">متبقي لإنهاء العملية:</span>
+                        <span id="countdown" class="countdown-timer">15:00</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2">سيتم إلغاء العملية تلقائياً بعد انتهاء الوقت</p>
+                </div>
+                
+                <!-- Confirm Payment Button -->
+                <button onclick="confirmPayment()" 
+                        class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    تأكيد إتمام الدفع
+                </button>
+                
+                <button onclick="backToInfoSection()" 
+                        class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold mt-3 transition-all">
+                    العودة للخلف
+                </button>
+            </div>
+        </div>
+
+        <!-- Section 3: Order Status -->
+        <div id="section-status" class="hidden-section">
+            <div class="glass rounded-2xl p-6">
+                <div class="text-center mb-6">
+                    <div id="status-icon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4">
+                        <i class="fas fa-clock text-3xl"></i>
+                    </div>
+                    
+                    <h2 id="status-title" class="text-xl font-bold mb-2">جاري مراجعة الدفع</h2>
+                    <p id="status-message" class="text-gray-400">
+                        يتم حالياً مراجعة عملية الدفع الخاصة بك. سيتم إعلامك فور اكتمال المراجعة.
+                    </p>
+                </div>
+                
+                <!-- Order Details -->
+                <div class="mb-6">
+                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">تفاصيل الطلب</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">رقم الطلب:</span>
+                            <span id="order-id" class="font-mono">#</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">الكتاب:</span>
+                            <span id="order-book" class="font-bold">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">المبلغ:</span>
+                            <span id="order-amount" class="font-bold">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">التاريخ:</span>
+                            <span id="order-date" class="font-bold">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div id="action-buttons" class="space-y-3">
+                    <!-- سيتم تعبئة الأزرار حسب حالة الطلب -->
+                </div>
+            </div>
+        </div>
     </main>
+
+    <!-- Download Button (Hidden by default) -->
+    <div id="download-section" class="hidden p-4 max-w-md mx-auto">
+        <div class="glass rounded-2xl p-6 text-center">
+            <div class="w-20 h-20 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-green-500/30">
+                <i class="fas fa-download text-green-500 text-3xl"></i>
+            </div>
+            
+            <h2 class="text-xl font-bold mb-4">تم الدفع بنجاح! 🎉</h2>
+            <p class="text-gray-400 mb-6">شكراً لشرائك. يمكنك الآن تحميل الكتاب.</p>
+            
+            <a id="download-link" href="#" target="_blank" 
+               class="block w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold mb-3 transition-all">
+                <i class="fas fa-download mr-2"></i>
+                تحميل الكتاب
+            </a>
+            
+            <button onclick="window.location.href='data.html'" 
+                    class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold">
+                العودة إلى المكتبة
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="text-center">
+            <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-white">جاري المعالجة...</p>
+        </div>
+    </div>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4efVo2ak3jhTslz-jFvHAkhEt-t9SVOQ",
+            authDomain: "e-shop-aa5ea.firebaseapp.com",
+            databaseURL: "https://e-shop-aa5ea-default-rtdb.firebaseio.com",
+            projectId: "e-shop-aa5ea",
+            storageBucket: "e-shop-aa5ea.firebasestorage.app",
+            messagingSenderId: "751567638938",
+            appId: "1:751567638938:android:63555c7081ec50c6dcaa23"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Global Variables
+        let currentBook = null;
+        let currentBookId = null;
+        let currentBookPrice = null;
+        let orderId = null;
+        let countdownInterval = null;
+        let timeLeft = 15 * 60; // 15 minutes in seconds
+        let userPhone = null;
+
+        // Initialize Page
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get book ID from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            currentBookId = urlParams.get('book');
+            
+            if (!currentBookId) {
+                showError('لم يتم تحديد كتاب!');
+                setTimeout(() => window.location.href = 'data.html', 2000);
+                return;
+            }
+            
+            // Load book details
+            loadBookDetails();
+            
+            // Check for existing order
+            checkExistingOrder();
+        });
+
+        // Load Book Details from Firebase
+        function loadBookDetails() {
+            showLoading(true);
+            
+            const bookRef = database.ref(`books/${currentBookId}`);
+            bookRef.once('value')
+                .then(snapshot => {
+                    showLoading(false);
+                    
+                    if (snapshot.exists()) {
+                        currentBook = snapshot.val();
+                        currentBookPrice = currentBook.priceReal || currentBook.price || 0;
+                        
+                        // Update UI with book details
+                        document.getElementById('book-title').textContent = currentBook.name || 'كتاب';
+                        document.getElementById('book-price').textContent = formatPrice(currentBookPrice);
+                        document.getElementById('payment-amount').textContent = formatPrice(currentBookPrice);
+                        
+                        // Update order details
+                        document.getElementById('order-book').textContent = currentBook.name || 'كتاب';
+                        document.getElementById('order-amount').textContent = formatPrice(currentBookPrice);
+                    } else {
+                        showError('الكتاب غير موجود!');
+                        setTimeout(() => window.location.href = 'data.html', 2000);
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showError('خطأ في تحميل بيانات الكتاب');
+                    console.error('Error loading book:', error);
+                });
+        }
+
+        // Show Information Section
+        function showPaymentSection() {
+            const name = document.getElementById('customer-name').value.trim();
+            const phone = document.getElementById('customer-phone').value.trim();
+            
+            if (!name || !phone) {
+                showError('يرجى ملء جميع الحقول المطلوبة');
+                return;
+            }
+            
+            if (phone.length < 10) {
+                showError('رقم الهاتف غير صحيح');
+                return;
+            }
+            
+            userPhone = phone;
+            
+            // Update steps
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step1').classList.add('completed');
+            document.getElementById('step2').classList.remove('pending');
+            document.getElementById('step2').classList.add('active');
+            
+            // Show payment section
+            document.getElementById('section-info').style.display = 'none';
+            document.getElementById('section-payment').classList.add('show');
+            
+            // Start countdown
+            startCountdown();
+        }
+
+        // Back to Information Section
+        function backToInfoSection() {
+            // Update steps
+            document.getElementById('step1').classList.remove('completed');
+            document.getElementById('step1').classList.add('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step2').classList.add('pending');
+            
+            // Show info section
+            document.getElementById('section-payment').classList.remove('show');
+            document.getElementById('section-info').style.display = 'block';
+            
+            // Stop countdown
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+            }
+        }
+
+        // Start Countdown Timer
+        function startCountdown() {
+            const countdownElement = document.getElementById('countdown');
+            
+            countdownInterval = setInterval(() => {
+                timeLeft--;
+                
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                
+                countdownElement.textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    showError('انتهى وقت العملية!');
+                    setTimeout(() => window.location.href = 'data.html', 3000);
+                }
+            }, 1000);
+        }
+
+        // Copy to Clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text)
+                .then(() => {
+                    const btn = event.currentTarget;
+                    const icon = btn.querySelector('i');
+                    
+                    // Change icon
+                    icon.className = 'fas fa-check';
+                    btn.classList.add('copied');
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        icon.className = 'fas fa-copy';
+                        btn.classList.remove('copied');
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('Failed to copy:', err);
+                });
+        }
+
+        // Confirm Payment and Save Order
+        function confirmPayment() {
+            const name = document.getElementById('customer-name').value.trim();
+            
+            if (!name || !userPhone) {
+                showError('يرجى تعبئة المعلومات أولاً');
+                return;
+            }
+            
+            // Generate unique order ID
+            orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            
+            // Prepare order data
+            const orderData = {
+                id: orderId,
+                bookId: currentBookId,
+                bookName: currentBook.name || 'كتاب',
+                price: currentBookPrice,
+                customerName: name,
+                customerPhone: userPhone,
+                status: 'pending', // pending, approved, rejected
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                paymentMethod: 'vodafone_cash',
+                paymentAccount: '01009341792',
+                attempts: 1
+            };
+            
+            showLoading(true);
+            
+            // Save order to Firebase
+            const orderRef = database.ref(`orders/${userPhone}_${currentBookId}`);
+            orderRef.set(orderData)
+                .then(() => {
+                    showLoading(false);
+                    
+                    // Update steps
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step2').classList.add('completed');
+                    document.getElementById('step3').classList.remove('pending');
+                    document.getElementById('step3').classList.add('active');
+                    
+                    // Show status section
+                    document.getElementById('section-payment').classList.remove('show');
+                    document.getElementById('section-status').classList.add('show');
+                    
+                    // Update order details
+                    document.getElementById('order-id').textContent = orderId;
+                    document.getElementById('order-date').textContent = new Date().toLocaleDateString('ar-SA');
+                    
+                    // Stop countdown
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
+                    }
+                    
+                    // Start monitoring order status
+                    monitorOrderStatus();
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showError('خطأ في حفظ الطلب. حاول مرة أخرى.');
+                    console.error('Error saving order:', error);
+                });
+        }
+
+        // Monitor Order Status Changes
+        function monitorOrderStatus() {
+            const orderRef = database.ref(`orders/${userPhone}_${currentBookId}`);
+            
+            orderRef.on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const order = snapshot.val();
+                    updateOrderStatusUI(order.status);
+                    
+                    // If approved, show download section
+                    if (order.status === 'approved') {
+                        showDownloadSection();
+                    }
+                }
+            });
+        }
+
+        // Update Order Status UI
+        function updateOrderStatusUI(status) {
+            const statusIcon = document.getElementById('status-icon');
+            const statusTitle = document.getElementById('status-title');
+            const statusMessage = document.getElementById('status-message');
+            const actionButtons = document.getElementById('action-buttons');
+            const headerStatus = document.getElementById('order-status');
+            
+            // Update header status
+            headerStatus.innerHTML = '';
+            headerStatus.classList.remove('hidden');
+            
+            switch(status) {
+                case 'pending':
+                    statusIcon.className = 'w-20 h-20 bg-yellow-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-yellow-500/30';
+                    statusIcon.innerHTML = '<i class="fas fa-clock text-yellow-500 text-3xl"></i>';
+                    statusTitle.textContent = 'جاري مراجعة الدفع';
+                    statusMessage.textContent = 'يتم حالياً مراجعة عملية الدفع الخاصة بك. سيتم إعلامك فور اكتمال المراجعة.';
+                    
+                    headerStatus.innerHTML = '<span class="status-badge status-pending"><i class="fas fa-clock"></i> قيد المراجعة</span>';
+                    
+                    actionButtons.innerHTML = `
+                        <button onclick="checkPaymentAgain()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            تحديث الحالة
+                        </button>
+                    `;
+                    break;
+                    
+                case 'approved':
+                    statusIcon.className = 'w-20 h-20 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-500/30';
+                    statusIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-3xl"></i>';
+                    statusTitle.textContent = 'تمت الموافقة بنجاح!';
+                    statusMessage.textContent = 'تمت الموافقة على طلبك واكتملت عملية الشراء بنجاح.';
+                    
+                    headerStatus.innerHTML = '<span class="status-badge status-approved"><i class="fas fa-check-circle"></i> تمت الموافقة</span>';
+                    
+                    actionButtons.innerHTML = `
+                        <button onclick="showDownloadSection()" class="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition-all">
+                            <i class="fas fa-download mr-2"></i>
+                            فهمت، تحميل الكتاب
+                        </button>
+                    `;
+                    break;
+                    
+                case 'rejected':
+                    statusIcon.className = 'w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-500/30';
+                    statusIcon.innerHTML = '<i class="fas fa-times-circle text-red-500 text-3xl"></i>';
+                    statusTitle.textContent = 'تم رفض الطلب';
+                    statusMessage.textContent = 'عذراً، لم يتم التحقق من عملية الدفع. يرجى المحاولة مرة أخرى.';
+                    
+                    headerStatus.innerHTML = '<span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> مرفوض</span>';
+                    
+                    actionButtons.innerHTML = `
+                        <button onclick="retryPayment()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all">
+                            <i class="fas fa-redo-alt mr-2"></i>
+                            إعادة المحاولة
+                        </button>
+                        <button onclick="window.location.href=\'data.html\'" class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all">
+                            العودة إلى المكتبة
+                        </button>
+                    `;
+                    break;
+            }
+        }
+
+        // Show Download Section
+        function showDownloadSection() {
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('download-section').classList.remove('hidden');
+            
+            // Get download link from Firebase
+            const downloadRef = database.ref(`download/${currentBookId}`);
+            downloadRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const downloadData = snapshot.val();
+                        const downloadLink = document.getElementById('download-link');
+                        
+                        if (downloadData.url) {
+                            downloadLink.href = downloadData.url;
+                            downloadLink.innerHTML = '<i class="fas fa-download mr-2"></i> تحميل الكتاب';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading download link:', error);
+                });
+        }
+
+        // Check Existing Order
+        function checkExistingOrder() {
+            // Try to get phone from localStorage or sessionStorage
+            const savedPhone = localStorage.getItem('user_phone') || sessionStorage.getItem('user_phone');
+            
+            if (savedPhone && currentBookId) {
+                const orderRef = database.ref(`orders/${savedPhone}_${currentBookId}`);
+                
+                orderRef.once('value')
+                    .then(snapshot => {
+                        if (snapshot.exists()) {
+                            const order = snapshot.val();
+                            userPhone = savedPhone;
+                            
+                            // Pre-fill customer info
+                            document.getElementById('customer-name').value = order.customerName || '';
+                            document.getElementById('customer-phone').value = order.customerPhone || '';
+                            
+                            // Check order status
+                            if (order.status === 'pending') {
+                                // Show status section directly
+                                showExistingOrderStatus(order);
+                            } else if (order.status === 'approved') {
+                                // Show download section directly
+                                showDownloadSection();
+                            } else if (order.status === 'rejected') {
+                                // Show retry option
+                                updateOrderStatusUI('rejected');
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error checking existing order:', error);
+                    });
+            }
+        }
+
+        // Show Existing Order Status
+        function showExistingOrderStatus(order) {
+            orderId = order.id;
+            
+            // Update steps
+            document.getElementById('step1').classList.add('completed');
+            document.getElementById('step2').classList.add('completed');
+            document.getElementById('step3').classList.add('active');
+            
+            // Hide info and payment sections
+            document.getElementById('section-info').style.display = 'none';
+            document.getElementById('section-payment').style.display = 'none';
+            
+            // Show status section
+            document.getElementById('section-status').classList.add('show');
+            
+            // Update order details
+            document.getElementById('order-id').textContent = order.id;
+            document.getElementById('order-date').textContent = new Date(order.timestamp).toLocaleDateString('ar-SA');
+            
+            // Start monitoring
+            monitorOrderStatus();
+        }
+
+        // Retry Payment
+        function retryPayment() {
+            // Increment attempts count
+            const orderRef = database.ref(`orders/${userPhone}_${currentBookId}`);
+            
+            orderRef.transaction(order => {
+                if (order) {
+                    order.attempts = (order.attempts || 1) + 1;
+                    order.status = 'pending';
+                    order.timestamp = firebase.database.ServerValue.TIMESTAMP;
+                }
+                return order;
+            })
+            .then(() => {
+                // Show payment section again
+                document.getElementById('section-status').classList.remove('show');
+                document.getElementById('section-payment').classList.add('show');
+                
+                // Reset countdown
+                timeLeft = 15 * 60;
+                startCountdown();
+            })
+            .catch(error => {
+                showError('خطأ في تحديث الطلب');
+                console.error('Error updating order:', error);
+            });
+        }
+
+        // Check Payment Again
+        function checkPaymentAgain() {
+            showLoading(true);
+            
+            // Simulate checking with delay
+            setTimeout(() => {
+                showLoading(false);
+                
+                // In real app, you would check with your backend
+                // For now, we'll just show a message
+                showError('لا توجد تحديثات جديدة. جاري المراجعة...', 'info');
+            }, 2000);
+        }
+
+        // Helper Functions
+        function formatPrice(price) {
+            if (!price) return '0';
+            const num = parseInt(price);
+            if (isNaN(num)) return price;
+            return num.toLocaleString('ar-SA') + ' جنيه';
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.classList.toggle('hidden', !show);
+        }
+
+        function showError(message, type = 'error') {
+            // Create notification
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 left-4 max-w-md mx-auto p-4 rounded-xl font-bold text-center z-50 ${
+                type === 'error' ? 'bg-red-600/90 text-white' : 'bg-blue-600/90 text-white'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Save user phone for future reference
+        function saveUserPhone(phone) {
+            localStorage.setItem('user_phone', phone);
+            sessionStorage.setItem('user_phone', phone);
+        }
+    </script>
 </body>
 </html>
