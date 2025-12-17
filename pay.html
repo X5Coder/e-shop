@@ -292,25 +292,6 @@
             to { opacity: 0; transform: translateX(100%); }
         }
 
-        .stat-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 15px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-
-        .stat-label {
-            font-size: 12px;
-            color: #999;
-            margin-top: 5px;
-        }
-
         .user-email-badge {
             background: rgba(0, 102, 204, 0.1);
             border: 1px solid rgba(0, 102, 204, 0.3);
@@ -366,6 +347,61 @@
             color: #999;
             margin-top: 5px;
         }
+
+        .final-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .final-section {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .order-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .order-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .order-number {
+            font-family: monospace;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, var(--success), #0da36b);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -382,17 +418,17 @@
     </header>
 
     <!-- Main Content -->
-    <main class="p-4 max-w-md mx-auto pb-20" id="main-content">
-        <!-- Automatic Check Section (Initially Hidden) -->
+    <main class="p-4 max-w-4xl mx-auto pb-20" id="main-content">
+        <!-- Auto Check Section -->
         <section id="section-auto-check" class="visible-section">
             <div class="glass rounded-2xl p-6 text-center">
                 <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
                 <h2 class="text-xl font-bold mb-4">جارٍ التحقق من حالة الشراء...</h2>
-                <p class="text-gray-400">يتم التحقق من حالات الدفع السابقة لهذا الكتاب</p>
+                <p class="text-gray-400">يتم تحميل معلومات حسابك والتحقق من حالات الدفع السابقة</p>
             </div>
         </section>
 
-        <!-- Step 1: Payment Method (Only shown if no previous state or state is 'no') -->
+        <!-- Step 1: Payment Method -->
         <section id="section-payment-method" class="hidden-section">
             <div class="step-indicator">
                 <div class="step active">
@@ -517,25 +553,7 @@
                     </div>
                 </div>
 
-                <!-- User Info -->
-                <div class="mb-6">
-                    <div class="payment-details-table">
-                        <tr>
-                            <td>البريد الإلكتروني:</td>
-                            <td id="payment-user-email">user@email.com</td>
-                        </tr>
-                        <tr>
-                            <td>طريقة الدفع:</td>
-                            <td id="payment-method-display">محفظة إلكترونية</td>
-                        </tr>
-                        <tr id="wallet-details-row">
-                            <td>رقم المحفظة:</td>
-                            <td id="payment-wallet-number">010XXXXXXXX</td>
-                        </tr>
-                    </div>
-                </div>
-
-                <!-- Wallet Instructions -->
+                <!-- Payment Instructions -->
                 <div id="wallet-instructions" class="payment-details">
                     <div class="payment-info-card">
                         <h3 class="font-bold mb-3">تعليمات التحويل:</h3>
@@ -634,179 +652,157 @@
             </div>
         </section>
 
-        <!-- Step 3: Order Status -->
-        <section id="section-order-status" class="hidden-section">
-            <div class="glass rounded-2xl p-6 mb-4">
-                <!-- Current Order Status -->
-                <div class="text-center mb-6">
-                    <div id="status-icon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4">
-                        <i class="fas fa-clock text-3xl text-yellow-500"></i>
+        <!-- Final Section: Order Status & History -->
+        <section id="section-final" class="hidden-section">
+            <div class="final-section">
+                <!-- Left Column: Order Status -->
+                <div>
+                    <div class="glass rounded-2xl p-6 mb-4">
+                        <h2 class="text-xl font-bold mb-6 text-center">حالة الدفع الحالية</h2>
+                        
+                        <!-- Current Order Status -->
+                        <div class="text-center mb-6">
+                            <div id="status-icon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4">
+                                <i class="fas fa-clock text-3xl text-yellow-500"></i>
+                            </div>
+                            
+                            <h3 id="status-title" class="text-lg font-bold mb-2">جاري المراجعة</h3>
+                            <p id="status-message" class="text-gray-400 mb-4">
+                                يتم حالياً مراجعة عملية الدفع الخاصة بك
+                            </p>
+                            
+                            <div id="current-status-badge" class="inline-block">
+                                <span class="status-badge status-tdd">
+                                    <i class="fas fa-clock"></i> قيد المراجعة
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Order Details -->
+                        <div class="mb-6">
+                            <h4 class="font-bold mb-4 border-b border-white/10 pb-2">معلومات الطلب</h4>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">رقم الطلب:</span>
+                                    <span id="current-order-id" class="font-mono font-bold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">البريد الإلكتروني:</span>
+                                    <span id="current-order-email" class="font-bold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">طريقة الدفع:</span>
+                                    <span id="current-payment-method" class="font-bold">-</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-400">التاريخ:</span>
+                                    <span id="current-order-date" class="font-bold">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div id="action-buttons" class="space-y-3">
+                            <button onclick="checkOrderStatus()" 
+                                    class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
+                                <i class="fas fa-sync-alt mr-2"></i>
+                                تحديث الحالة
+                            </button>
+                        </div>
                     </div>
-                    
-                    <h2 id="status-title" class="text-xl font-bold mb-2">جاري المراجعة</h2>
-                    <p id="status-message" class="text-gray-400 mb-4">
-                        يتم حالياً مراجعة عملية الدفع الخاصة بك
-                    </p>
-                    
-                    <div id="current-status-badge" class="inline-block">
-                        <span class="status-badge status-tdd">
-                            <i class="fas fa-clock"></i> قيد المراجعة (tdd)
-                        </span>
+
+                    <!-- Download Section (Shows when status is ok) -->
+                    <div id="download-section" class="hidden">
+                        <div class="glass rounded-2xl p-6 text-center">
+                            <div class="w-16 h-16 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-500/30">
+                                <i class="fas fa-check-circle text-green-500 text-2xl"></i>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold mb-4">تم الدفع بنجاح! 🎉</h3>
+                            
+                            <a id="download-link" href="#" target="_blank" 
+                               class="download-btn w-full justify-center mb-4">
+                                <i class="fas fa-download"></i>
+                                تحميل الكتاب
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Retry Section (Shows when status is no) -->
+                    <div id="retry-section" class="hidden">
+                        <div class="glass rounded-2xl p-6 text-center">
+                            <div class="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-500/30">
+                                <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+                            </div>
+                            
+                            <h3 class="text-lg font-bold mb-4">تم رفض الدفع</h3>
+                            <p class="text-gray-400 mb-4">عذراً، لم يتم التحقق من عملية الدفع</p>
+                            
+                            <button onclick="retryPurchase()" 
+                                    class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all">
+                                <i class="fas fa-redo-alt mr-2"></i>
+                                شراء مرة أخرى
+                            </button>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Book Details -->
-                <div class="mb-6">
-                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">تفاصيل الكتاب</h3>
-                    <div class="flex items-start gap-3">
-                        <img id="status-book-image" src="" alt="" class="book-image-small">
-                        <div class="flex-1">
-                            <h4 class="font-bold" id="status-book-title">اسم الكتاب</h4>
-                            <p class="text-sm text-gray-400 mb-2" id="status-book-description">وصف الكتاب...</p>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-400">السعر:</span>
-                                <span class="font-bold text-blue-400" id="status-book-price">0 جنيه</span>
+                <!-- Right Column: Purchase History -->
+                <div>
+                    <div class="glass rounded-2xl p-6">
+                        <h2 class="text-xl font-bold mb-6 text-center">سجل الشراء لهذا الكتاب</h2>
+                        
+                        <!-- Statistics -->
+                        <div class="mb-6">
+                            <div class="purchase-stats">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="history-total">0</div>
+                                    <div class="stat-label">إجمالي المحاولات</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="history-ok">0</div>
+                                    <div class="stat-label">نجاح</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value" id="history-no">0</div>
+                                    <div class="stat-label">فشل</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Book Info -->
+                        <div class="mb-6">
+                            <div class="flex items-start gap-3">
+                                <img id="history-book-image" src="" alt="" class="book-image-small">
+                                <div class="flex-1">
+                                    <h4 class="font-bold" id="history-book-title">اسم الكتاب</h4>
+                                    <p class="text-sm text-gray-400" id="history-book-description">وصف الكتاب...</p>
+                                    <div class="flex justify-between items-center mt-2">
+                                        <span class="text-gray-400">السعر:</span>
+                                        <span class="font-bold text-blue-400" id="history-book-price">0 جنيه</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- History List -->
+                        <div>
+                            <h4 class="font-bold mb-4 border-b border-white/10 pb-2">تفاصيل المحاولات</h4>
+                            <div id="history-list" class="max-h-80 overflow-y-auto pr-2">
+                                <!-- سيتم تعبئة السجل هنا -->
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Statistics -->
-                <div class="mb-6">
-                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">إحصائيات الشراء لهذا الكتاب</h3>
-                    <div class="purchase-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="status-total">0</div>
-                            <div class="stat-label">إجمالي المحاولات</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="status-ok">0</div>
-                            <div class="stat-label">نجاح</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="status-no">0</div>
-                            <div class="stat-label">فشل</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Payment Details -->
-                <div class="mb-6">
-                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">تفاصيل الدفع</h3>
-                    <div class="payment-details-table">
-                        <tr>
-                            <td>رقم الطلب:</td>
-                            <td id="status-order-id" class="font-mono">-</td>
-                        </tr>
-                        <tr>
-                            <td>البريد الإلكتروني:</td>
-                            <td id="status-email">-</td>
-                        </tr>
-                        <tr>
-                            <td>طريقة الدفع:</td>
-                            <td id="status-payment-method">-</td>
-                        </tr>
-                        <tr>
-                            <td>التاريخ:</td>
-                            <td id="status-date">-</td>
-                        </tr>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div id="action-buttons" class="space-y-3">
-                    <button onclick="checkOrderStatus()" 
-                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
-                        <i class="fas fa-sync-alt mr-2"></i>
-                        تحديث الحالة
-                    </button>
-                </div>
             </div>
-        </section>
 
-        <!-- Download Section (When status is ok) -->
-        <section id="section-download" class="hidden-section">
-            <div class="glass rounded-2xl p-6 text-center">
-                <div class="w-20 h-20 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-green-500/30">
-                    <i class="fas fa-check-circle text-green-500 text-3xl"></i>
-                </div>
-                
-                <h2 class="text-xl font-bold mb-4">تم الدفع بنجاح! 🎉</h2>
-                <p class="text-gray-400 mb-6">تمت الموافقة على طلبك. يمكنك الآن تحميل الكتاب.</p>
-                
-                <a id="download-link" href="#" target="_blank" 
-                   class="block w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold mb-4 transition-all">
-                    <i class="fas fa-download mr-2"></i>
-                    تحميل الكتاب
-                </a>
-
-                <!-- Statistics -->
-                <div class="mb-6">
-                    <h3 class="font-bold mb-4">إحصائيات الشراء لهذا الكتاب</h3>
-                    <div class="purchase-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="download-total">0</div>
-                            <div class="stat-label">إجمالي المحاولات</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="download-ok">0</div>
-                            <div class="stat-label">نجاح</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="download-no">0</div>
-                            <div class="stat-label">فشل</div>
-                        </div>
-                    </div>
-                </div>
-                
+            <!-- Back to Library Button -->
+            <div class="mt-6 text-center">
                 <button onclick="window.location.href='data.html'" 
-                        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold">
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
+                    <i class="fas fa-book"></i>
                     العودة إلى المكتبة
                 </button>
-            </div>
-        </section>
-
-        <!-- Retry Section (When status is no) -->
-        <section id="section-retry" class="hidden-section">
-            <div class="glass rounded-2xl p-6 text-center">
-                <div class="w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-red-500/30">
-                    <i class="fas fa-times-circle text-red-500 text-3xl"></i>
-                </div>
-                
-                <h2 class="text-xl font-bold mb-4">تم رفض الدفع</h2>
-                <p class="text-gray-400 mb-6">عذراً، لم يتم التحقق من عملية الدفع. يمكنك المحاولة مرة أخرى.</p>
-
-                <!-- Statistics -->
-                <div class="mb-6">
-                    <h3 class="font-bold mb-4">إحصائيات الشراء لهذا الكتاب</h3>
-                    <div class="purchase-stats">
-                        <div class="stat-item">
-                            <div class="stat-value" id="retry-total">0</div>
-                            <div class="stat-label">إجمالي المحاولات</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="retry-ok">0</div>
-                            <div class="stat-label">نجاح</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" id="retry-no">0</div>
-                            <div class="stat-label">فشل</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="space-y-3">
-                    <button onclick="retryPurchase()" 
-                            class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold">
-                        <i class="fas fa-redo-alt mr-2"></i>
-                        شراء مرة أخرى
-                    </button>
-                    
-                    <button onclick="window.location.href='data.html'" 
-                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold">
-                        العودة إلى المكتبة
-                    </button>
-                </div>
             </div>
         </section>
     </main>
@@ -848,6 +844,7 @@
         let orderKey = null;
         let userIdentifier = null;
         let currentOrder = null;
+        let userData = null;
 
         // Initialize Page
         document.addEventListener('DOMContentLoaded', () => {
@@ -861,14 +858,60 @@
                 return;
             }
             
-            // Load book details first
-            loadBookDetails();
+            // Load user data first
+            loadUserData();
         });
+
+        // Load User Data from Firebase
+        function loadUserData() {
+            showLoading(true);
+            
+            // First, get all users to find the current user
+            const usersRef = database.ref('email');
+            usersRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const users = snapshot.val();
+                        const userKeys = Object.keys(users);
+                        
+                        // Get user from localStorage or use first user
+                        const savedUserId = localStorage.getItem('eshop_user_id');
+                        let userId = savedUserId;
+                        
+                        if (!userId && userKeys.length > 0) {
+                            // Use first user if no saved user
+                            userId = userKeys[0];
+                            localStorage.setItem('eshop_user_id', userId);
+                        }
+                        
+                        if (userId && users[userId]) {
+                            userData = users[userId];
+                            userEmail = userData.email || userData.userEmail || 'user@eshope.com';
+                            userIdentifier = btoa(userEmail + '_' + currentBookId).replace(/=/g, '');
+                            
+                            // Update UI with user data
+                            updateUserEmailUI();
+                            
+                            // Now load book details
+                            loadBookDetails();
+                        } else {
+                            showLoading(false);
+                            showError('لا يوجد حساب مستخدم!');
+                        }
+                    } else {
+                        showLoading(false);
+                        showError('لا يوجد مستخدمين مسجلين!');
+                    }
+                })
+                .catch(error => {
+                    showLoading(false);
+                    showError('خطأ في تحميل بيانات المستخدم');
+                    console.error('Error loading user data:', error);
+                });
+        }
 
         // Load Book Details from Firebase
         function loadBookDetails() {
-            showLoading(true);
-            
             const bookRef = database.ref(`books/${currentBookId}`);
             bookRef.once('value')
                 .then(snapshot => {
@@ -879,8 +922,8 @@
                         // Update UI with book details
                         updateBookDetails();
                         
-                        // Now check user state
-                        checkUserState();
+                        // Now check existing orders
+                        checkExistingOrders();
                     } else {
                         showLoading(false);
                         showError('الكتاب غير موجود!');
@@ -894,47 +937,12 @@
                 });
         }
 
-        // Check User State
-        function checkUserState() {
-            // Get user email from localStorage or generate unique one
-            let storedEmail = localStorage.getItem('eshop_user_email');
-            
-            if (!storedEmail) {
-                // Generate unique email for this user
-                storedEmail = generateUserEmail();
-                localStorage.setItem('eshop_user_email', storedEmail);
-            }
-            
-            userEmail = storedEmail;
-            userIdentifier = btoa(userEmail + '_' + currentBookId).replace(/=/g, '');
-            
-            // Update UI with user email
-            updateUserEmailUI();
-            
-            // Check for existing orders
-            checkExistingOrders();
-        }
-
-        // Generate Unique User Email
-        function generateUserEmail() {
-            const timestamp = Date.now();
-            const random = Math.random().toString(36).substring(2, 10);
-            return `user_${random}_${timestamp}@eshope.com`;
-        }
-
-        // Update User Email in UI
-        function updateUserEmailUI() {
-            document.getElementById('current-user-email').textContent = userEmail;
-            document.getElementById('user-email-display').textContent = userEmail;
-            document.getElementById('payment-user-email').textContent = userEmail;
-            document.getElementById('user-email-badge').classList.remove('hidden');
-        }
-
         // Check Existing Orders
         function checkExistingOrders() {
-            const ordersRef = database.ref(`orders/${userIdentifier}`);
+            const payRef = database.ref('pay');
             
-            ordersRef.orderByChild('timestamp').once('value')
+            // Search for orders with this user email and book ID
+            payRef.orderByChild('email').equalTo(userEmail).once('value')
                 .then(snapshot => {
                     showLoading(false);
                     
@@ -942,15 +950,17 @@
                         const orders = snapshot.val();
                         const orderKeys = Object.keys(orders);
                         
-                        // Get the latest order
+                        // Filter orders for this book
                         let latestOrder = null;
                         let latestKey = null;
                         
                         orderKeys.forEach(key => {
                             const order = orders[key];
-                            if (!latestOrder || order.timestamp > latestOrder.timestamp) {
-                                latestOrder = order;
-                                latestKey = key;
+                            if (order.bookId === currentBookId) {
+                                if (!latestOrder || order.timestamp > latestOrder.timestamp) {
+                                    latestOrder = order;
+                                    latestKey = key;
+                                }
                             }
                         });
                         
@@ -959,21 +969,21 @@
                             orderKey = latestKey;
                             orderId = latestOrder.orderId;
                             selectedPaymentMethod = latestOrder.paymentMethod;
-                            userAccount = latestOrder.account;
+                            userAccount = latestOrder.paymentNumber || latestOrder.account;
                             
                             // Handle based on state
                             handleStateBasedOnOrder(latestOrder.state);
                         } else {
-                            // No orders found, show payment method selection
+                            // No orders found for this book, show payment method selection
                             showSection('section-payment-method');
                         }
                     } else {
-                        // No orders found, show payment method selection
+                        // No orders at all, show payment method selection
                         showSection('section-payment-method');
                     }
                     
-                    // Load statistics in all cases
-                    loadStatistics();
+                    // Load history and statistics
+                    loadPurchaseHistory();
                 })
                 .catch(error => {
                     showLoading(false);
@@ -984,98 +994,225 @@
 
         // Handle State Based on Order
         function handleStateBasedOnOrder(state) {
+            // Always show final section with status and history
+            showSection('section-final');
+            
+            // Update current order details
+            updateCurrentOrderDetails();
+            
+            // Handle state-specific UI
             switch(state) {
                 case 'ok':
                     // Show download section
-                    showSection('section-download');
-                    // Start monitoring for changes (in case admin changes state)
-                    monitorOrderStatus();
+                    document.getElementById('download-section').classList.remove('hidden');
+                    document.getElementById('retry-section').classList.add('hidden');
+                    updateStatusUI('ok');
                     break;
                     
                 case 'no':
                     // Show retry section
-                    showSection('section-retry');
+                    document.getElementById('download-section').classList.add('hidden');
+                    document.getElementById('retry-section').classList.remove('hidden');
+                    updateStatusUI('no');
                     break;
                     
                 case 'tdd':
-                    // Show order status section
-                    showSection('section-order-status');
-                    // Start monitoring
+                    // Show pending status
+                    document.getElementById('download-section').classList.add('hidden');
+                    document.getElementById('retry-section').classList.add('hidden');
+                    updateStatusUI('tdd');
+                    
+                    // Start monitoring for changes
                     monitorOrderStatus();
                     break;
+            }
+        }
+
+        // Update Current Order Details
+        function updateCurrentOrderDetails() {
+            if (!currentOrder) return;
+            
+            document.getElementById('current-order-id').textContent = currentOrder.orderId || '-';
+            document.getElementById('current-order-email').textContent = currentOrder.email || userEmail;
+            document.getElementById('current-payment-method').textContent = 
+                currentOrder.paymentMethod === 'wallet' ? 'محفظة إلكترونية' : 'PayPal';
+            document.getElementById('current-order-date').textContent = 
+                currentOrder.timestampReadable || new Date(currentOrder.timestamp).toLocaleString('ar-SA');
+        }
+
+        // Update Status UI
+        function updateStatusUI(state) {
+            const statusIcon = document.getElementById('status-icon');
+            const statusTitle = document.getElementById('status-title');
+            const statusMessage = document.getElementById('status-message');
+            const currentStatusBadge = document.getElementById('current-status-badge');
+            
+            switch(state) {
+                case 'tdd':
+                    statusIcon.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-yellow-500/30';
+                    statusIcon.innerHTML = '<i class="fas fa-clock text-3xl text-yellow-500"></i>';
+                    statusTitle.textContent = 'جاري المراجعة';
+                    statusMessage.textContent = 'يتم حالياً مراجعة عملية الدفع الخاصة بك';
+                    currentStatusBadge.innerHTML = '<span class="status-badge status-tdd"><i class="fas fa-clock"></i> قيد المراجعة</span>';
+                    break;
                     
-                default:
-                    // Show payment method selection
-                    showSection('section-payment-method');
+                case 'ok':
+                    statusIcon.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-500/30';
+                    statusIcon.innerHTML = '<i class="fas fa-check-circle text-3xl text-green-500"></i>';
+                    statusTitle.textContent = 'تمت الموافقة';
+                    statusMessage.textContent = 'تمت الموافقة على عملية الدفع بنجاح';
+                    currentStatusBadge.innerHTML = '<span class="status-badge status-ok"><i class="fas fa-check-circle"></i> نجاح</span>';
+                    break;
+                    
+                case 'no':
+                    statusIcon.className = 'w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-500/30';
+                    statusIcon.innerHTML = '<i class="fas fa-times-circle text-3xl text-red-500"></i>';
+                    statusTitle.textContent = 'تم الرفض';
+                    statusMessage.textContent = 'عذراً، تم رفض عملية الدفع';
+                    currentStatusBadge.innerHTML = '<span class="status-badge status-no"><i class="fas fa-times-circle"></i> فشل</span>';
+                    break;
             }
         }
 
         // Monitor Order Status Changes
         function monitorOrderStatus() {
-            if (!userIdentifier || !orderKey) return;
+            if (!orderKey) return;
             
-            const orderRef = database.ref(`orders/${userIdentifier}/${orderKey}/state`);
+            const orderRef = database.ref(`pay/${orderKey}/state`);
             
             orderRef.on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const state = snapshot.val();
                     handleStateBasedOnOrder(state);
                     
-                    // Update statistics when state changes
-                    loadStatistics();
+                    // Update history when state changes
+                    loadPurchaseHistory();
                 }
             });
         }
 
-        // Load Statistics
-        function loadStatistics() {
-            if (!userIdentifier) return;
+        // Load Purchase History
+        function loadPurchaseHistory() {
+            const payRef = database.ref('pay');
             
-            const ordersRef = database.ref(`orders/${userIdentifier}`);
-            
-            ordersRef.once('value')
+            payRef.orderByChild('email').equalTo(userEmail).once('value')
                 .then(snapshot => {
+                    const historyList = document.getElementById('history-list');
+                    historyList.innerHTML = '';
+                    
+                    let total = 0;
+                    let okCount = 0;
+                    let noCount = 0;
+                    let tddCount = 0;
+                    
                     if (snapshot.exists()) {
                         const orders = snapshot.val();
-                        let total = 0;
-                        let okCount = 0;
-                        let noCount = 0;
-                        let tddCount = 0;
+                        const orderKeys = Object.keys(orders);
                         
-                        Object.values(orders).forEach(order => {
+                        // Filter orders for this book and sort by timestamp
+                        const bookOrders = orderKeys
+                            .filter(key => orders[key].bookId === currentBookId)
+                            .map(key => ({
+                                key,
+                                ...orders[key]
+                            }))
+                            .sort((a, b) => b.timestamp - a.timestamp);
+                        
+                        // Count statistics
+                        bookOrders.forEach(order => {
                             total++;
                             if (order.state === 'ok') okCount++;
                             if (order.state === 'no') noCount++;
                             if (order.state === 'tdd') tddCount++;
                         });
                         
-                        // Update statistics in all sections
-                        updateStatisticsInSections(total, okCount, noCount, tddCount);
+                        // Update statistics
+                        document.getElementById('history-total').textContent = total;
+                        document.getElementById('history-ok').textContent = okCount;
+                        document.getElementById('history-no').textContent = noCount;
+                        
+                        // Add orders to history list
+                        bookOrders.forEach(order => {
+                            addToHistoryList(order);
+                        });
                     } else {
-                        updateStatisticsInSections(0, 0, 0, 0);
+                        document.getElementById('history-total').textContent = '0';
+                        document.getElementById('history-ok').textContent = '0';
+                        document.getElementById('history-no').textContent = '0';
+                        
+                        historyList.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-history text-3xl mb-3 opacity-30"></i>
+                                <p>لا توجد عمليات شراء سابقة</p>
+                            </div>
+                        `;
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading statistics:', error);
+                    console.error('Error loading purchase history:', error);
                 });
         }
 
-        // Update Statistics in All Sections
-        function updateStatisticsInSections(total, ok, no, tdd) {
-            // Status section
-            document.getElementById('status-total').textContent = total;
-            document.getElementById('status-ok').textContent = ok;
-            document.getElementById('status-no').textContent = no;
+        // Add to History List
+        function addToHistoryList(order) {
+            const historyList = document.getElementById('history-list');
             
-            // Download section
-            document.getElementById('download-total').textContent = total;
-            document.getElementById('download-ok').textContent = ok;
-            document.getElementById('download-no').textContent = no;
+            let statusBadge = '';
+            let statusClass = '';
             
-            // Retry section
-            document.getElementById('retry-total').textContent = total;
-            document.getElementById('retry-ok').textContent = ok;
-            document.getElementById('retry-no').textContent = no;
+            switch(order.state) {
+                case 'tdd':
+                    statusBadge = '<span class="px-2 py-1 bg-yellow-900/30 text-yellow-400 rounded text-xs">قيد المراجعة</span>';
+                    statusClass = 'tdd';
+                    break;
+                case 'ok':
+                    statusBadge = '<span class="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">نجاح</span>';
+                    statusClass = 'ok';
+                    break;
+                case 'no':
+                    statusBadge = '<span class="px-2 py-1 bg-red-900/30 text-red-400 rounded text-xs">فشل</span>';
+                    statusClass = 'no';
+                    break;
+            }
+            
+            const orderDate = order.timestampReadable || new Date(order.timestamp).toLocaleString('ar-SA');
+            
+            const orderHtml = `
+                <div class="history-card ${statusClass}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-bold text-sm">${order.orderId || 'N/A'}</span>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-xs text-gray-400">${orderDate}</p>
+                        </div>
+                        <span class="font-bold text-blue-400">${formatPrice(order.bookPrice || 0)}</span>
+                    </div>
+                    
+                    <div class="text-xs text-gray-400">
+                        <div class="flex items-center gap-1 mb-1">
+                            <i class="fas fa-${order.paymentMethod === 'wallet' ? 'wallet' : 'paypal'}"></i>
+                            <span>${order.paymentMethod === 'wallet' ? 'محفظة' : 'PayPal'}</span>
+                        </div>
+                        ${order.paymentNumber ? `
+                        <div class="truncate">
+                            <i class="fas fa-credit-card"></i>
+                            <span>${order.paymentNumber}</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            historyList.insertAdjacentHTML('beforeend', orderHtml);
+        }
+
+        // Update User Email in UI
+        function updateUserEmailUI() {
+            document.getElementById('current-user-email').textContent = userEmail;
+            document.getElementById('user-email-display').textContent = userEmail;
+            document.getElementById('user-email-badge').classList.remove('hidden');
         }
 
         // Update Book Details in UI
@@ -1093,8 +1230,8 @@
             // Set book images
             const bookImages = [
                 'book-preview-image',
-                'book-image', 
-                'status-book-image'
+                'book-image',
+                'history-book-image'
             ];
             
             bookImages.forEach(id => {
@@ -1107,9 +1244,9 @@
             });
             
             // Update other sections
-            document.getElementById('status-book-title').textContent = bookTitle;
-            document.getElementById('status-book-description').textContent = bookDescription;
-            document.getElementById('status-book-price').textContent = formatPrice(currentBookPrice);
+            document.getElementById('history-book-title').textContent = bookTitle;
+            document.getElementById('history-book-description').textContent = bookDescription;
+            document.getElementById('history-book-price').textContent = formatPrice(currentBookPrice);
             
             // Show old price if available
             if (currentBook.price && currentBook.priceReal) {
@@ -1199,15 +1336,8 @@
             if (!isValid) return;
             
             // Update payment details
-            document.getElementById('payment-method-display').textContent = 
-                selectedPaymentMethod === 'wallet' ? 'محفظة إلكترونية' : 'PayPal';
-            
             if (selectedPaymentMethod === 'wallet') {
-                document.getElementById('payment-wallet-number').textContent = userAccount;
-                document.getElementById('wallet-details-row').classList.remove('hidden');
                 document.getElementById('from-number').textContent = userAccount;
-            } else {
-                document.getElementById('wallet-details-row').classList.add('hidden');
             }
             
             // Show payment instructions
@@ -1292,26 +1422,29 @@
             
             // Generate order ID
             orderId = 'ORD-' + Date.now();
-            orderKey = Date.now().toString();
+            orderKey = 'order_' + Date.now();
             
-            // Prepare order data
+            // Prepare order data for 'pay' collection
             const orderData = {
                 email: userEmail,
                 state: "tdd", // Default state
                 paymentMethod: selectedPaymentMethod,
-                account: userAccount,
+                paymentNumber: userAccount,
                 bookId: currentBookId,
                 bookName: currentBook.name || 'كتاب',
+                bookDescription: currentBook.dec || '',
                 bookPrice: currentBookPrice,
+                bookImage: currentBook.img1 || '',
+                userName: userData.name || userData.userName || 'مستخدم',
                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                 timestampReadable: new Date().toLocaleString('ar-SA'),
                 orderId: orderId
             };
             
-            // Save to Firebase
-            const ordersRef = database.ref(`orders/${userIdentifier}/${orderKey}`);
+            // Save to Firebase under 'pay' collection
+            const payRef = database.ref(`pay/${orderKey}`);
             
-            ordersRef.set(orderData)
+            payRef.set(orderData)
                 .then(() => {
                     showLoading(false);
                     
@@ -1320,21 +1453,11 @@
                         clearInterval(countdownInterval);
                     }
                     
-                    // Update order details in status section
-                    document.getElementById('status-order-id').textContent = orderId;
-                    document.getElementById('status-email').textContent = userEmail;
-                    document.getElementById('status-payment-method').textContent = 
-                        selectedPaymentMethod === 'wallet' ? 'محفظة إلكترونية' : 'PayPal';
-                    document.getElementById('status-date').textContent = new Date().toLocaleString('ar-SA');
+                    // Set as current order
+                    currentOrder = orderData;
                     
-                    // Show order status section
-                    showSection('section-order-status');
-                    
-                    // Start monitoring order status
-                    monitorOrderStatus();
-                    
-                    // Load updated statistics
-                    loadStatistics();
+                    // Show final section
+                    handleStateBasedOnOrder('tdd');
                 })
                 .catch(error => {
                     showLoading(false);
@@ -1345,14 +1468,12 @@
 
         // Navigation Functions
         function showSection(sectionId) {
-            // Hide all sections except auto-check
+            // Hide all sections
             const sectionsToHide = [
+                'section-auto-check',
                 'section-payment-method',
                 'section-payment-instructions',
-                'section-order-status',
-                'section-download',
-                'section-retry',
-                'section-auto-check'
+                'section-final'
             ];
             
             sectionsToHide.forEach(id => {
