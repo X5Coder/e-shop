@@ -179,16 +179,17 @@
         .image-gallery {
             position: relative;
             width: 100%;
-            height: 220px;
+            height: 300px; /* ارتفاع مناسب للكتب */
             margin-bottom: 15px;
             border-radius: 10px;
             overflow: hidden;
             background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
         }
 
         @media (min-width: 768px) {
             .image-gallery {
-                height: 250px;
+                height: 320px;
             }
         }
 
@@ -198,17 +199,21 @@
             left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain; /* تغيير من cover إلى contain للحفاظ على نسب الكتاب */
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
-            transition: opacity 1.2s ease-in-out;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 10px;
         }
 
         .book-image.hidden {
             opacity: 0;
+            transform: translateY(20px) scale(0.95);
         }
 
         .book-image.visible {
             opacity: 1;
+            transform: translateY(0) scale(1);
         }
 
         /* Image Navigation Dots */
@@ -237,20 +242,62 @@
             border-radius: 10px;
         }
 
-        /* Auto-play indicator */
-        .auto-play-indicator {
+        /* Book Description */
+        .book-description {
+            font-size: 14px;
+            color: #a0a0a0;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3; /* عدد الأسطر المطلوب */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 68px; /* ارتفاع لـ 3 أسطر تقريباً */
+            margin-bottom: 8px;
+        }
+
+        .book-description.expanded {
+            -webkit-line-clamp: unset;
+            height: auto;
+        }
+
+        .read-more-btn {
+            color: #0066cc;
+            font-size: 13px;
+            cursor: pointer;
+            margin-top: 4px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .read-more-btn:hover {
+            text-decoration: underline;
+        }
+
+        /* Tap Effect for Image */
+        .tap-indicator {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 5;
-            color: white;
-            font-size: 12px;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 2px 8px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            padding: 12px;
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .tap-indicator.show {
+            opacity: 1;
+            animation: tapPulse 1s ease-out;
+        }
+
+        @keyframes tapPulse {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.8; }
+            100% { transform: translate(-50%, -50%) scale(1.5); opacity: 0; }
         }
     </style>
 </head>
@@ -283,7 +330,7 @@
             <p class="text-gray-400 max-w-2xl mx-auto">اختر من مجموعة واسعة من الكتب الإلكترونية المميزة مع عرض تفاعلي متعدد الصور</p>
         </div>
 
-        <!-- Books Grid - Updated for responsive design -->
+        <!-- Books Grid -->
         <div id="books-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <!-- سيتم إضافة الكتب ديناميكياً من Firebase -->
             <div class="col-span-full text-center py-10">
@@ -389,7 +436,6 @@
             
             const bookDiv = document.createElement('div');
             bookDiv.className = 'book-card rounded-2xl p-4 cursor-pointer';
-            bookDiv.onclick = () => openBookDetails(bookId);
             
             // معالجة الصور - استخدام الصور المتاحة أو الصور الافتراضية
             const img1 = book.img1 || 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=500&q=80';
@@ -399,9 +445,8 @@
                 ${discountPercentage > 0 ? `<div class="discount-badge">خصم ${discountPercentage}%</div>` : ''}
                 
                 <div class="image-gallery" id="gallery-${bookId}">
-                    <div class="auto-play-indicator">
-                        <i class="fas fa-images"></i>
-                        <span>عرض تلقائي</span>
+                    <div class="tap-indicator" id="tap-indicator-${bookId}">
+                        <i class="fas fa-hand-point-up text-xl"></i>
                     </div>
                     <img src="${img1}" 
                          alt="${book.name || 'كتاب'}" 
@@ -420,19 +465,25 @@
                 
                 <h3 class="text-lg font-bold mb-2 truncate">${book.name || 'كتاب بدون عنوان'}</h3>
                 
-                <p class="text-sm text-gray-400 mb-3 line-clamp-2 h-10">${book.dec || 'لا يوجد وصف متاح'}</p>
+                <div class="book-description" id="desc-${bookId}">
+                    ${book.dec || 'لا يوجد وصف متاح لهذا الكتاب حالياً.'}
+                </div>
+                
+                ${book.dec && book.dec.length > 120 ? 
+                    `<div class="read-more-btn" id="read-more-${bookId}" onclick="toggleDescription('${bookId}')">المزيد</div>` 
+                    : ''}
                 
                 <div class="flex justify-between items-center mt-4">
                     <div class="flex items-center gap-2">
                         ${book.price ? `
-                            <span class="old-price">${formatPrice(book.price)}</span>
-                            <span class="new-price">${formatPrice(book.priceReal || book.price)}</span>
+                            <span class="old-price">${formatPrice(book.price)} جنيه</span>
+                            <span class="new-price">${formatPrice(book.priceReal || book.price)} جنيه</span>
                         ` : `
-                            <span class="new-price">${formatPrice(book.priceReal || 'غير متاح')}</span>
+                            <span class="new-price">${formatPrice(book.priceReal || 'غير متاح')} جنيه</span>
                         `}
                     </div>
                     
-                    <button class="btn-press px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold active:scale-95 transition-all">
+                    <button onclick="openBookDetails('${bookId}')" class="btn-press px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-bold active:scale-95 transition-all">
                         شراء الآن
                     </button>
                 </div>
@@ -446,13 +497,28 @@
             return bookDiv;
         }
 
-        // Initialize Image Gallery with auto-play
+        // Toggle book description
+        function toggleDescription(bookId) {
+            const desc = document.getElementById(`desc-${bookId}`);
+            const btn = document.getElementById(`read-more-${bookId}`);
+            
+            if (desc.classList.contains('expanded')) {
+                desc.classList.remove('expanded');
+                btn.textContent = 'المزيد';
+            } else {
+                desc.classList.add('expanded');
+                btn.textContent = 'إخفاء';
+            }
+        }
+
+        // Initialize Image Gallery with tap to change
         function initImageGallery(bookId) {
             const gallery = document.getElementById(`gallery-${bookId}`);
             if (!gallery) return;
             
             const images = gallery.querySelectorAll('.book-image');
             const dots = gallery.querySelectorAll('.image-dot');
+            const tapIndicator = document.getElementById(`tap-indicator-${bookId}`);
             
             if (images.length < 2) return;
             
@@ -460,13 +526,11 @@
             let interval;
             
             function showImage(index) {
-                // Hide all images
-                images.forEach(img => {
-                    img.classList.remove('visible');
-                    img.classList.add('hidden');
-                });
+                // Hide current image with animation
+                images[currentIndex].classList.remove('visible');
+                images[currentIndex].classList.add('hidden');
                 
-                // Show selected image
+                // Show new image with animation
                 images[index].classList.remove('hidden');
                 images[index].classList.add('visible');
                 
@@ -484,10 +548,28 @@
                 showImage(nextIndex);
             }
             
+            // Add click event to gallery to change image on tap
+            gallery.addEventListener('click', (e) => {
+                if (e.target.classList.contains('image-dot')) return;
+                
+                // Show tap effect
+                tapIndicator.classList.add('show');
+                setTimeout(() => {
+                    tapIndicator.classList.remove('show');
+                }, 1000);
+                
+                // Change image
+                nextImage();
+                
+                // Reset auto-play interval
+                clearInterval(interval);
+                startAutoPlay();
+            });
+            
             // Add click event to dots
             dots.forEach((dot, index) => {
                 dot.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent triggering book card click
+                    e.stopPropagation(); // Prevent triggering gallery click
                     showImage(index);
                     
                     // Reset auto-play interval
@@ -497,13 +579,13 @@
             });
             
             function startAutoPlay() {
-                interval = setInterval(nextImage, 3000); // Change image every 3 seconds
+                interval = setInterval(nextImage, 4000); // Change image every 4 seconds
             }
             
             // Start auto-play
             startAutoPlay();
             
-            // Pause auto-play on hover (optional)
+            // Pause auto-play on hover
             gallery.addEventListener('mouseenter', () => {
                 clearInterval(interval);
             });
@@ -541,12 +623,12 @@
             });
         }
 
-        // Format Price
+        // Format Price (change to جنيه instead of ريال)
         function formatPrice(price) {
-            if (!price) return '0 ريال';
+            if (!price) return '0';
             const num = parseInt(price);
             if (isNaN(num)) return price;
-            return num.toLocaleString('ar-SA') + ' ريال';
+            return num.toLocaleString('ar-SA');
         }
 
         // Open Book Details (Redirect to pay.html with book ID)
