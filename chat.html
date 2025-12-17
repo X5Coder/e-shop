@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إتمام الشراء - E-Shop Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary: #0066cc;
+            --secondary: #cc3333;
+            --bg-dark: #0a0a0a;
+            --text-dark: #f5f5f5;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-method {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .payment-method:hover {
+            transform: translateY(-2px);
+            border-color: rgba(0, 102, 204, 0.3);
+        }
+
+        .payment-method.selected {
+            border-color: #0066cc;
+            background: rgba(0, 102, 204, 0.1);
+        }
+
+        .btn-press {
+            transition: all 0.3s ease;
+        }
+
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="p-4 border-b border-gray-800">
+        <div class="container mx-auto flex justify-between items-center">
+            <button onclick="window.history.back()" class="btn-press w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 active:scale-90 transition-all">
+                <i class="fas fa-arrow-right text-white"></i>
+            </button>
+            <h1 class="text-xl font-bold">إتمام عملية الشراء</h1>
+            <div class="w-10"></div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4 max-w-2xl">
+        <!-- Book Info -->
+        <div id="book-info" class="glass rounded-2xl p-6 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-20 h-20 bg-blue-600/20 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-book text-blue-500 text-2xl"></i>
+                </div>
+                <div>
+                    <h2 id="book-title" class="text-lg font-bold">جاري تحميل معلومات الكتاب...</h2>
+                    <p id="book-price" class="text-blue-400 mt-1">جاري التحميل...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-lg font-bold mb-4">اختر طريقة الدفع</h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <!-- PayPal -->
+                <div class="payment-method p-4 rounded-xl text-center" onclick="selectPaymentMethod('paypal')">
+                    <div class="w-12 h-12 bg-blue-100/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fab fa-paypal text-blue-500 text-xl"></i>
+                    </div>
+                    <p class="font-medium">PayPal</p>
+                </div>
+
+                <!-- Vodafone Cash -->
+                <div class="payment-method p-4 rounded-xl text-center" onclick="selectPaymentMethod('vodafone')">
+                    <div class="w-12 h-12 bg-red-100/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-mobile-alt text-red-500 text-xl"></i>
+                    </div>
+                    <p class="font-medium">فودافون كاش</p>
+                </div>
+
+                <!-- Orange Cash -->
+                <div class="payment-method p-4 rounded-xl text-center" onclick="selectPaymentMethod('orange')">
+                    <div class="w-12 h-12 bg-orange-100/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-mobile-alt text-orange-500 text-xl"></i>
+                    </div>
+                    <p class="font-medium">اورنج كاش</p>
+                </div>
+
+                <!-- Etisalat Cash -->
+                <div class="payment-method p-4 rounded-xl text-center" onclick="selectPaymentMethod('etisalat')">
+                    <div class="w-12 h-12 bg-green-100/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-mobile-alt text-green-500 text-xl"></i>
+                    </div>
+                    <p class="font-medium">اتصالات كاش</p>
+                </div>
+
+                <!-- InstaPay -->
+                <div class="payment-method p-4 rounded-xl text-center" onclick="selectPaymentMethod('instapay')">
+                    <div class="w-12 h-12 bg-purple-100/10 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-bolt text-purple-500 text-xl"></i>
+                    </div>
+                    <p class="font-medium">انستاباي</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Details Form -->
+        <div id="payment-details" class="glass rounded-2xl p-6 mb-6 hidden">
+            <h2 id="method-title" class="text-lg font-bold mb-4"></h2>
+            
+            <!-- PayPal Form -->
+            <div id="paypal-form" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm mb-2">أدخل البريد الإلكتروني الخاص بك (الذي ستدفع منه)</label>
+                    <input type="email" id="paypal-email" class="w-full p-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500">
+                    <p class="text-sm text-gray-400 mt-2">سيتم تحويل المبلغ إلى: <span class="text-blue-400">lava4ggaming@gmail.com</span></p>
+                </div>
+            </div>
+
+            <!-- Mobile Payment Form -->
+            <div id="mobile-form" class="hidden">
+                <div class="mb-4">
+                    <label id="mobile-label" class="block text-sm mb-2"></label>
+                    <input type="tel" id="mobile-number" class="w-full p-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500" placeholder="01XXXXXXXXX">
+                    <p id="recipient-number" class="text-sm text-gray-400 mt-2"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Info -->
+        <div class="glass rounded-2xl p-6 mb-6">
+            <h2 class="text-lg font-bold mb-4">معلوماتك الشخصية</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm mb-2">الاسم الكامل</label>
+                    <input type="text" id="user-name" class="w-full p-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500" placeholder="أدخل اسمك الكامل">
+                </div>
+                <div>
+                    <label class="block text-sm mb-2">البريد الإلكتروني</label>
+                    <input type="email" id="user-email" class="w-full p-3 rounded-xl bg-white/5 border border-white/10 focus:outline-none focus:border-blue-500" placeholder="example@gmail.com">
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-4">
+            <button onclick="window.history.back()" class="btn-press flex-1 p-4 rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 transition-all">
+                رجوع
+            </button>
+            <button onclick="processPayment()" id="pay-btn" class="btn-press flex-1 p-4 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-95 transition-all font-bold">
+                إتمام الشراء
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA4efVo2ak3jhTslz-jFvHAkhEt-t9SVOQ",
+            authDomain: "e-shop-aa5ea.firebaseapp.com",
+            databaseURL: "https://e-shop-aa5ea-default-rtdb.firebaseio.com",
+            projectId: "e-shop-aa5ea",
+            storageBucket: "e-shop-aa5ea.firebasestorage.app",
+            messagingSenderId: "751567638938",
+            appId: "1:751567638938:android:63555c7081ec50c6dcaa23"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Get book ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = urlParams.get('book');
+        let selectedMethod = null;
+        let bookData = null;
+
+        // Payment method details
+        const paymentMethods = {
+            'paypal': {
+                title: 'PayPal',
+                type: 'email',
+                recipient: 'lava4ggaming@gmail.com'
+            },
+            'vodafone': {
+                title: 'فودافون كاش',
+                type: 'mobile',
+                recipient: '01009341792',
+                label: 'أدخل رقم الهاتف الخاص بك (فودافون)'
+            },
+            'orange': {
+                title: 'اورنج كاش',
+                type: 'mobile',
+                recipient: '01009341792',
+                label: 'أدخل رقم الهاتف الخاص بك (اورنج)'
+            },
+            'etisalat': {
+                title: 'اتصالات كاش',
+                type: 'mobile',
+                recipient: '01009341792',
+                label: 'أدخل رقم الهاتف الخاص بك (اتصالات)'
+            },
+            'instapay': {
+                title: 'انستاباي',
+                type: 'mobile',
+                recipient: '01009341792',
+                label: 'أدخل رقم الهاتف الخاص بك (انستاباي)'
+            }
+        };
+
+        // Load book details
+        function loadBookDetails() {
+            if (!bookId) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            database.ref('books/' + bookId).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        bookData = snapshot.val();
+                        document.getElementById('book-title').textContent = bookData.name || 'كتاب بدون عنوان';
+                        document.getElementById('book-price').textContent = 
+                            (bookData.priceReal || bookData.price || 0) + ' جنيه';
+                    } else {
+                        alert('الكتاب غير موجود!');
+                        window.location.href = 'index.html';
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading book:', error);
+                    alert('حدث خطأ في تحميل بيانات الكتاب');
+                });
+        }
+
+        // Select payment method
+        function selectPaymentMethod(method) {
+            selectedMethod = method;
+            
+            // Remove selection from all methods
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selection to clicked method
+            event.currentTarget.classList.add('selected');
+            
+            // Show payment details form
+            const detailsDiv = document.getElementById('payment-details');
+            detailsDiv.classList.remove('hidden');
+            
+            const methodInfo = paymentMethods[method];
+            document.getElementById('method-title').textContent = `تفاصيل الدفع عبر ${methodInfo.title}`;
+            
+            // Show appropriate form
+            if (method === 'paypal') {
+                document.getElementById('paypal-form').classList.remove('hidden');
+                document.getElementById('mobile-form').classList.add('hidden');
+            } else {
+                document.getElementById('mobile-form').classList.remove('hidden');
+                document.getElementById('paypal-form').classList.add('hidden');
+                
+                document.getElementById('mobile-label').textContent = methodInfo.label;
+                document.getElementById('recipient-number').innerHTML = 
+                    `سيتم تحويل المبلغ إلى: <span class="text-blue-400">${methodInfo.recipient}</span>`;
+            }
+        }
+
+        // Process payment
+        function processPayment() {
+            const userName = document.getElementById('user-name').value.trim();
+            const userEmail = document.getElementById('user-email').value.trim();
+            
+            // Validation
+            if (!userName) {
+                alert('الرجاء إدخال اسمك الكامل');
+                return;
+            }
+            
+            if (!userEmail) {
+                alert('الرجاء إدخال بريدك الإلكتروني');
+                return;
+            }
+            
+            if (!selectedMethod) {
+                alert('الرجاء اختيار طريقة الدفع');
+                return;
+            }
+            
+            let paymentDetails = '';
+            if (selectedMethod === 'paypal') {
+                const paypalEmail = document.getElementById('paypal-email').value.trim();
+                if (!paypalEmail) {
+                    alert('الرجاء إدخال البريد الإلكتروني الخاص بالبايبال');
+                    return;
+                }
+                paymentDetails = `البريد الإلكتروني الدافع: ${paypalEmail}`;
+            } else {
+                const mobileNumber = document.getElementById('mobile-number').value.trim();
+                if (!mobileNumber) {
+                    alert('الرجاء إدخال رقم الهاتف');
+                    return;
+                }
+                paymentDetails = `رقم الهاتف الدافع: ${mobileNumber}`;
+            }
+            
+            // Create order
+            const orderId = 'ORD_' + Date.now();
+            const orderData = {
+                bookId: bookId,
+                bookName: bookData.name,
+                price: bookData.priceReal || bookData.price,
+                userName: userName,
+                userEmail: userEmail,
+                paymentMethod: paymentMethods[selectedMethod].title,
+                paymentDetails: paymentDetails,
+                status: 'pending',
+                timestamp: Date.now(),
+                orderId: orderId
+            };
+            
+            // Save order to Firebase
+            database.ref('orders/' + orderId).set(orderData)
+                .then(() => {
+                    // Redirect to chat page
+                    localStorage.setItem('currentOrder', orderId);
+                    window.location.href = `chat.html?order=${orderId}`;
+                })
+                .catch((error) => {
+                    console.error('Error saving order:', error);
+                    alert('حدث خطأ في حفظ الطلب. الرجاء المحاولة مرة أخرى');
+                });
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', loadBookDetails);
+    </script>
+</body>
+</html>
