@@ -103,19 +103,19 @@
             gap: 5px;
         }
 
-        .status-pending {
+        .status-tdd {
             background: rgba(245, 158, 11, 0.1);
             color: var(--warning);
             border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
-        .status-approved {
+        .status-ok {
             background: rgba(16, 185, 129, 0.1);
             color: var(--success);
             border: 1px solid rgba(16, 185, 129, 0.3);
         }
 
-        .status-rejected {
+        .status-no {
             background: rgba(239, 68, 68, 0.1);
             color: var(--error);
             border: 1px solid rgba(239, 68, 68, 0.3);
@@ -220,15 +220,15 @@
             border-right: 4px solid transparent;
         }
 
-        .history-card.pending {
+        .history-card.tdd {
             border-right-color: var(--warning);
         }
 
-        .history-card.approved {
+        .history-card.ok {
             border-right-color: var(--success);
         }
 
-        .history-card.rejected {
+        .history-card.no {
             border-right-color: var(--error);
         }
 
@@ -291,6 +291,25 @@
             from { opacity: 1; transform: translateX(0); }
             to { opacity: 0; transform: translateX(100%); }
         }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -307,71 +326,36 @@
 
     <!-- Main Content -->
     <main class="p-4 max-w-md mx-auto pb-20" id="main-content">
-        <!-- Step 1: Customer Information -->
-        <section id="section-info" class="visible-section">
+        <!-- Step 1: Payment Method -->
+        <section id="section-payment-method" class="visible-section">
             <div class="step-indicator">
                 <div class="step active">
                     <div class="step-circle">1</div>
-                    <div class="step-label">المعلومات</div>
+                    <div class="step-label">طريقة الدفع</div>
                 </div>
                 <div class="step-line"></div>
                 <div class="step pending">
                     <div class="step-circle">2</div>
-                    <div class="step-label">الدفع</div>
-                </div>
-                <div class="step-line"></div>
-                <div class="step pending">
-                    <div class="step-circle">3</div>
-                    <div class="step-label">السجل</div>
-                </div>
-            </div>
-
-            <div class="glass rounded-2xl p-6 mb-4">
-                <h2 class="text-xl font-bold mb-6 text-center">معلومات العميل</h2>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-2">الاسم بالكامل</label>
-                        <input type="text" id="customer-name" 
-                               class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
-                               placeholder="أدخل اسمك بالكامل" required>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm text-gray-400 mb-2">رقم الهاتف (11 رقم)</label>
-                        <input type="tel" id="customer-phone" 
-                               class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
-                               placeholder="مثال: 01012345678"
-                               maxlength="11"
-                               pattern="01[0-9]{9}"
-                               required>
-                        <p class="text-xs text-gray-500 mt-1">يجب أن يكون الرقم 11 رقم ويبدأ بـ 01</p>
-                    </div>
-                    
-                    <button onclick="validateAndProceed()" 
-                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold mt-6 transition-all">
-                        التالي إلى الدفع
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Step 2: Payment Method -->
-        <section id="section-payment-method" class="hidden-section">
-            <div class="step-indicator">
-                <div class="step completed">
-                    <div class="step-circle"><i class="fas fa-check"></i></div>
                     <div class="step-label">المعلومات</div>
                 </div>
                 <div class="step-line"></div>
-                <div class="step active">
-                    <div class="step-circle">2</div>
-                    <div class="step-label">الدفع</div>
-                </div>
-                <div class="step-line"></div>
                 <div class="step pending">
                     <div class="step-circle">3</div>
-                    <div class="step-label">السجل</div>
+                    <div class="step-label">التأكيد</div>
+                </div>
+            </div>
+
+            <!-- Book Info -->
+            <div class="glass rounded-2xl p-4 mb-4">
+                <div class="flex items-start gap-3">
+                    <img id="book-preview-image" src="" alt="" class="book-image-small">
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg" id="book-preview-title">اسم الكتاب</h3>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="text-gray-400 line-through" id="book-old-price">0 جنيه</span>
+                            <span class="font-bold text-green-400 text-lg" id="book-preview-price">0 جنيه</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -408,41 +392,111 @@
                     </div>
                 </div>
 
+                <button onclick="proceedToPaymentInfo()" 
+                        class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold mt-8 transition-all"
+                        id="proceed-btn" disabled>
+                    التالي
+                </button>
+            </div>
+        </section>
+
+        <!-- Step 2: Payment Information -->
+        <section id="section-payment-info" class="hidden-section">
+            <div class="step-indicator">
+                <div class="step completed">
+                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                    <div class="step-label">طريقة الدفع</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step active">
+                    <div class="step-circle">2</div>
+                    <div class="step-label">المعلومات</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step pending">
+                    <div class="step-circle">3</div>
+                    <div class="step-label">التأكيد</div>
+                </div>
+            </div>
+
+            <div class="glass rounded-2xl p-6 mb-4">
+                <h2 class="text-xl font-bold mb-6 text-center" id="payment-info-title">معلومات الدفع</h2>
+                
+                <!-- Wallet Payment Info -->
+                <div id="wallet-info" class="payment-details">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">رقم المحفظة الإلكترونية</label>
+                            <input type="tel" id="wallet-number" 
+                                   class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                   placeholder="مثال: 01012345678"
+                                   maxlength="11"
+                                   pattern="01[0-9]{9}">
+                            <p class="text-xs text-gray-500 mt-1">رقم المحفظة التي ستقوم بالتحويل منها (11 رقم)</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">البريد الإلكتروني</label>
+                            <input type="email" id="wallet-email" 
+                                   class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                   placeholder="example@gmail.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PayPal Payment Info -->
+                <div id="paypal-info" class="payment-details hidden">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">البريد الإلكتروني أو اسم المستخدم</label>
+                            <input type="text" id="paypal-account" 
+                                   class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                   placeholder="البريد الإلكتروني أو اسم المستخدم في PayPal">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm text-gray-400 mb-2">البريد الإلكتروني للتواصل</label>
+                            <input type="email" id="paypal-email" 
+                                   class="w-full p-3 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:border-blue-500 transition-all"
+                                   placeholder="example@gmail.com">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="flex gap-3 mt-8">
-                    <button onclick="backToInfoSection()" 
+                    <button onclick="backToPaymentMethod()" 
                             class="flex-1 py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all">
                         رجوع
                     </button>
-                    <button onclick="proceedToPaymentDetails()" 
-                            class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all"
-                            id="proceed-btn" disabled>
+                    <button onclick="proceedToPaymentInstructions()" 
+                            class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
                         التالي
                     </button>
                 </div>
             </div>
         </section>
 
-        <!-- Step 3: Payment Details -->
-        <section id="section-payment-details" class="hidden-section">
+        <!-- Step 3: Payment Instructions -->
+        <section id="section-payment-instructions" class="hidden-section">
             <div class="step-indicator">
+                <div class="step completed">
+                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                    <div class="step-label">طريقة الدفع</div>
+                </div>
+                <div class="step-line"></div>
                 <div class="step completed">
                     <div class="step-circle"><i class="fas fa-check"></i></div>
                     <div class="step-label">المعلومات</div>
                 </div>
                 <div class="step-line"></div>
                 <div class="step active">
-                    <div class="step-circle">2</div>
-                    <div class="step-label">الدفع</div>
-                </div>
-                <div class="step-line"></div>
-                <div class="step pending">
                     <div class="step-circle">3</div>
-                    <div class="step-label">السجل</div>
+                    <div class="step-label">التأكيد</div>
                 </div>
             </div>
 
             <div class="glass rounded-2xl p-6 mb-4">
-                <h2 class="text-xl font-bold mb-6 text-center" id="payment-method-title">تفاصيل الدفع</h2>
+                <h2 class="text-xl font-bold mb-6 text-center">تعليمات الدفع</h2>
                 
                 <!-- Book Info -->
                 <div class="mb-6 p-4 bg-white/5 rounded-xl">
@@ -459,7 +513,7 @@
                     </div>
                 </div>
 
-                <!-- Payment Instructions -->
+                <!-- Wallet Instructions -->
                 <div id="wallet-instructions" class="payment-details">
                     <div class="payment-info-card">
                         <h3 class="font-bold mb-3">تعليمات الدفع بالمحفظة الإلكترونية:</h3>
@@ -495,7 +549,8 @@
                                 <i class="fas fa-info-circle text-blue-400 mr-2"></i>
                                 <strong>يجب عليك تحويل المبلغ بالضبط</strong> 
                                 <span class="font-bold text-yellow-400" id="exact-amount">0 جنيه</span>
-                                <strong>من الرقم أعلاه إلى الرقم الثابت 01009341792</strong>
+                                <strong>من الرقم </strong><span class="font-bold" id="user-wallet-number">010XXXXXXXX</span>
+                                <strong>إلى الرقم الثابت 01009341792</strong>
                             </p>
                         </div>
 
@@ -516,7 +571,7 @@
                         <div class="space-y-3">
                             <div>
                                 <p class="text-sm text-gray-400 mb-2">انقر على الرابط أدناه للدفع عبر PayPal:</p>
-                                <a href="https://paypal.me/example/50" 
+                                <a href="https://paypal.me/eshope/50" 
                                    target="_blank"
                                    class="block p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg text-center hover:bg-blue-900/30 transition-all">
                                     <i class="fab fa-paypal mr-2"></i>
@@ -552,7 +607,7 @@
                         موافق - قمت بالتحويل
                     </button>
                     
-                    <button onclick="backToPaymentMethod()" 
+                    <button onclick="backToPaymentInfo()" 
                             class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all">
                         رجوع
                     </button>
@@ -560,9 +615,14 @@
             </div>
         </section>
 
-        <!-- Step 4: Order Status & History -->
-        <section id="section-history" class="hidden-section">
+        <!-- Step 4: Order Status -->
+        <section id="section-order-status" class="hidden-section">
             <div class="step-indicator">
+                <div class="step completed">
+                    <div class="step-circle"><i class="fas fa-check"></i></div>
+                    <div class="step-label">طريقة الدفع</div>
+                </div>
+                <div class="step-line"></div>
                 <div class="step completed">
                     <div class="step-circle"><i class="fas fa-check"></i></div>
                     <div class="step-label">المعلومات</div>
@@ -570,12 +630,7 @@
                 <div class="step-line"></div>
                 <div class="step completed">
                     <div class="step-circle"><i class="fas fa-check"></i></div>
-                    <div class="step-label">الدفع</div>
-                </div>
-                <div class="step-line"></div>
-                <div class="step active">
-                    <div class="step-circle">3</div>
-                    <div class="step-label">السجل</div>
+                    <div class="step-label">التأكيد</div>
                 </div>
             </div>
 
@@ -583,59 +638,202 @@
                 <!-- Current Order Status -->
                 <div class="text-center mb-6">
                     <div id="status-icon" class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border-4">
-                        <i class="fas fa-clock text-3xl"></i>
+                        <i class="fas fa-clock text-3xl text-yellow-500"></i>
                     </div>
                     
-                    <h2 id="status-title" class="text-xl font-bold mb-2">حالة الطلب الحالي</h2>
+                    <h2 id="status-title" class="text-xl font-bold mb-2">جاري المراجعة</h2>
                     <p id="status-message" class="text-gray-400 mb-4">
-                        جاري مراجعة عملية الدفع الخاصة بك
+                        يتم حالياً مراجعة عملية الدفع الخاصة بك
                     </p>
                     
                     <div id="current-status-badge" class="inline-block">
-                        <!-- سيتم تعبئتها ديناميكياً -->
+                        <span class="status-badge status-tdd">
+                            <i class="fas fa-clock"></i> قيد المراجعة (tdd)
+                        </span>
                     </div>
-                </div>
-
-                <!-- Download Button (Visible only when approved) -->
-                <div id="download-container" class="hidden mb-6">
-                    <a id="download-link" href="#" target="_blank" 
-                       class="block w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-center transition-all mb-3">
-                        <i class="fas fa-download mr-2"></i>
-                        تحميل الكتاب
-                    </a>
-                    <p class="text-center text-sm text-gray-400">
-                        يمكنك الآن تحميل الكتاب بعد قبول الدفع
-                    </p>
                 </div>
 
                 <!-- Book Details -->
                 <div class="mb-6">
                     <h3 class="font-bold mb-4 border-b border-white/10 pb-2">تفاصيل الكتاب</h3>
                     <div class="flex items-start gap-3">
-                        <img id="history-book-image" src="" alt="" class="book-image-small">
+                        <img id="status-book-image" src="" alt="" class="book-image-small">
                         <div class="flex-1">
-                            <h4 class="font-bold" id="history-book-title">اسم الكتاب</h4>
-                            <p class="text-sm text-gray-400" id="history-book-description">وصف الكتاب...</p>
-                            <div class="flex justify-between items-center mt-2">
+                            <h4 class="font-bold" id="status-book-title">اسم الكتاب</h4>
+                            <p class="text-sm text-gray-400 mb-2" id="status-book-description">وصف الكتاب...</p>
+                            <div class="flex justify-between items-center">
                                 <span class="text-gray-400">السعر:</span>
-                                <span class="font-bold text-blue-400" id="history-book-price">0 جنيه</span>
+                                <span class="font-bold text-blue-400" id="status-book-price">0 جنيه</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Order History -->
-                <div id="order-history-container">
-                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">سجل الطلبات لهذا الكتاب</h3>
-                    <div id="history-list">
-                        <!-- سيتم تعبئة السجل هنا -->
+                <!-- Payment Details -->
+                <div class="mb-6">
+                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">تفاصيل الدفع</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">طريقة الدفع:</span>
+                            <span id="status-payment-method" class="font-bold">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">رقم الطلب:</span>
+                            <span id="status-order-id" class="font-mono">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">البريد الإلكتروني:</span>
+                            <span id="status-email" class="font-bold">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">التاريخ:</span>
+                            <span id="status-date" class="font-bold">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="mb-6">
+                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">إحصائيات الشراء</h3>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-purchases">0</div>
+                            <div class="stat-label">مرات الشراء</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="successful-purchases">0</div>
+                            <div class="stat-label">نجاح</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="failed-purchases">0</div>
+                            <div class="stat-label">فشل</div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Action Buttons -->
-                <div id="action-buttons" class="space-y-3 mt-6">
-                    <!-- سيتم تعبئة الأزرار حسب حالة الطلب -->
+                <div id="action-buttons" class="space-y-3">
+                    <button onclick="checkOrderStatus()" 
+                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        تحديث الحالة
+                    </button>
+                    
+                    <button onclick="window.location.href='data.html'" 
+                            class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all">
+                        العودة إلى المكتبة
+                    </button>
                 </div>
+            </div>
+        </section>
+
+        <!-- Download Section (When status is ok) -->
+        <section id="section-download" class="hidden-section">
+            <div class="glass rounded-2xl p-6 text-center">
+                <div class="w-20 h-20 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-green-500/30">
+                    <i class="fas fa-download text-green-500 text-3xl"></i>
+                </div>
+                
+                <h2 class="text-xl font-bold mb-4">تم الدفع بنجاح! 🎉</h2>
+                <p class="text-gray-400 mb-6">تمت الموافقة على طلبك. يمكنك الآن تحميل الكتاب.</p>
+                
+                <a id="download-link" href="#" target="_blank" 
+                   class="block w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold mb-3 transition-all">
+                    <i class="fas fa-download mr-2"></i>
+                    تحميل الكتاب
+                </a>
+                
+                <div class="space-y-3">
+                    <button onclick="window.location.href='data.html'" 
+                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold">
+                        العودة إلى المكتبة
+                    </button>
+                    
+                    <button onclick="viewPurchaseHistory()" 
+                            class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold">
+                        عرض سجل الشراء
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Retry Section (When status is no) -->
+        <section id="section-retry" class="hidden-section">
+            <div class="glass rounded-2xl p-6 text-center">
+                <div class="w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-red-500/30">
+                    <i class="fas fa-times-circle text-red-500 text-3xl"></i>
+                </div>
+                
+                <h2 class="text-xl font-bold mb-4">تم رفض الدفع</h2>
+                <p class="text-gray-400 mb-6">عذراً، لم يتم التحقق من عملية الدفع. يمكنك المحاولة مرة أخرى.</p>
+                
+                <div class="space-y-3">
+                    <button onclick="retryPurchase()" 
+                            class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold">
+                        <i class="fas fa-redo-alt mr-2"></i>
+                        شراء مرة أخرى
+                    </button>
+                    
+                    <button onclick="viewPurchaseHistory()" 
+                            class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold">
+                        <i class="fas fa-history mr-2"></i>
+                        عرض سجل الشراء
+                    </button>
+                    
+                    <button onclick="window.location.href='data.html'" 
+                            class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold">
+                        العودة إلى المكتبة
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Purchase History -->
+        <section id="section-history" class="hidden-section">
+            <div class="glass rounded-2xl p-6">
+                <h2 class="text-xl font-bold mb-6 text-center">سجل الشراء</h2>
+                
+                <!-- Book Info -->
+                <div class="mb-6">
+                    <div class="flex items-start gap-3">
+                        <img id="history-book-image" src="" alt="" class="book-image-small">
+                        <div class="flex-1">
+                            <h3 class="font-bold" id="history-book-title">اسم الكتاب</h3>
+                            <p class="text-sm text-gray-400" id="history-book-description">وصف الكتاب...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="mb-6">
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="stat-card">
+                            <div class="stat-number" id="history-total">0</div>
+                            <div class="stat-label">إجمالي المحاولات</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="history-ok">0</div>
+                            <div class="stat-label">نجاح (ok)</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="history-no">0</div>
+                            <div class="stat-label">فشل (no)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History List -->
+                <div class="mb-6">
+                    <h3 class="font-bold mb-4 border-b border-white/10 pb-2">تفاصيل المحاولات</h3>
+                    <div id="history-list" class="max-h-96 overflow-y-auto">
+                        <!-- سيتم تعبئة السجل هنا -->
+                    </div>
+                </div>
+
+                <button onclick="backToStatus()" 
+                        class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all">
+                    رجوع
+                </button>
             </div>
         </section>
     </main>
@@ -670,11 +868,12 @@
         let currentBookPrice = null;
         let orderId = null;
         let countdownInterval = null;
-        let timeLeft = 15 * 60; // 15 minutes in seconds
-        let userPhone = null;
-        let customerName = null;
+        let timeLeft = 15 * 60;
         let selectedPaymentMethod = null;
-        let currentOrderKey = null;
+        let userEmail = null;
+        let userAccount = null;
+        let orderKey = null;
+        let userIdentifier = null;
 
         // Initialize Page
         document.addEventListener('DOMContentLoaded', () => {
@@ -691,8 +890,8 @@
             // Load book details
             loadBookDetails();
             
-            // Check localStorage for existing data
-            loadFromLocalStorage();
+            // Check for existing orders
+            checkExistingOrders();
         });
 
         // Load Book Details from Firebase
@@ -710,9 +909,6 @@
                         
                         // Update UI with book details
                         updateBookDetails();
-                        
-                        // Check for existing orders
-                        checkExistingOrders();
                     } else {
                         showError('الكتاب غير موجود!');
                         setTimeout(() => window.location.href = 'data.html', 2000);
@@ -727,59 +923,42 @@
 
         // Update Book Details in UI
         function updateBookDetails() {
-            // Book info in payment section
+            // Book info in preview
+            document.getElementById('book-preview-title').textContent = currentBook.name || 'كتاب';
+            document.getElementById('book-preview-price').textContent = formatPrice(currentBookPrice);
             document.getElementById('book-title').textContent = currentBook.name || 'كتاب';
             document.getElementById('book-description').textContent = currentBook.dec || 'لا يوجد وصف متاح';
             document.getElementById('book-price').textContent = formatPrice(currentBookPrice);
             document.getElementById('exact-amount').textContent = formatPrice(currentBookPrice);
             
-            // Set book image
-            const bookImage = document.getElementById('book-image');
-            const historyBookImage = document.getElementById('history-book-image');
+            // Set book images
+            const bookImages = [
+                'book-preview-image',
+                'book-image', 
+                'status-book-image',
+                'history-book-image'
+            ];
             
-            if (currentBook.img1) {
-                bookImage.src = currentBook.img1;
-                historyBookImage.src = currentBook.img1;
-            } else {
-                // Default book image
-                bookImage.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
-                historyBookImage.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
-            }
+            bookImages.forEach(id => {
+                const img = document.getElementById(id);
+                if (currentBook.img1) {
+                    img.src = currentBook.img1;
+                } else {
+                    img.src = 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80';
+                }
+            });
             
-            // Update history section
+            // Update other sections
+            document.getElementById('status-book-title').textContent = currentBook.name || 'كتاب';
+            document.getElementById('status-book-description').textContent = currentBook.dec || 'لا يوجد وصف متاح';
+            document.getElementById('status-book-price').textContent = formatPrice(currentBookPrice);
             document.getElementById('history-book-title').textContent = currentBook.name || 'كتاب';
             document.getElementById('history-book-description').textContent = currentBook.dec || 'لا يوجد وصف متاح';
-            document.getElementById('history-book-price').textContent = formatPrice(currentBookPrice);
-        }
-
-        // Validate and Proceed to Payment Method
-        function validateAndProceed() {
-            const name = document.getElementById('customer-name').value.trim();
-            const phone = document.getElementById('customer-phone').value.trim();
             
-            if (!name || !phone) {
-                showError('يرجى ملء جميع الحقول المطلوبة');
-                return;
+            // Show old price if available
+            if (currentBook.price && currentBook.priceReal) {
+                document.getElementById('book-old-price').textContent = formatPrice(currentBook.price);
             }
-            
-            // Validate phone number (11 digits starting with 01)
-            const phoneRegex = /^01[0-9]{9}$/;
-            if (!phoneRegex.test(phone)) {
-                showError('رقم الهاتف غير صحيح. يجب أن يكون 11 رقم ويبدأ بـ 01');
-                return;
-            }
-            
-            customerName = name;
-            userPhone = phone;
-            
-            // Save to localStorage
-            saveToLocalStorage();
-            
-            // Update from number in payment instructions
-            document.getElementById('from-number').textContent = phone;
-            
-            // Proceed to payment method selection
-            showSection('section-payment-method');
         }
 
         // Select Payment Method
@@ -803,25 +982,100 @@
             
             // Enable proceed button
             document.getElementById('proceed-btn').disabled = false;
-            
-            // Update payment method title
-            const title = method === 'wallet' ? 'تفاصيل الدفع بالمحفظة' : 'تفاصيل الدفع عبر PayPal';
-            document.getElementById('payment-method-title').textContent = title;
         }
 
-        // Proceed to Payment Details
-        function proceedToPaymentDetails() {
+        // Proceed to Payment Info
+        function proceedToPaymentInfo() {
             if (!selectedPaymentMethod) {
                 showError('يرجى اختيار طريقة الدفع');
                 return;
             }
             
-            showSection('section-payment-details');
+            showSection('section-payment-info');
             
-            // Show appropriate instructions
+            // Update title
+            const title = selectedPaymentMethod === 'wallet' ? 
+                'معلومات المحفظة الإلكترونية' : 'معلومات PayPal';
+            document.getElementById('payment-info-title').textContent = title;
+            
+            // Show appropriate form
+            if (selectedPaymentMethod === 'wallet') {
+                document.getElementById('wallet-info').classList.remove('hidden');
+                document.getElementById('paypal-info').classList.add('hidden');
+            } else {
+                document.getElementById('wallet-info').classList.add('hidden');
+                document.getElementById('paypal-info').classList.remove('hidden');
+            }
+        }
+
+        // Proceed to Payment Instructions
+        function proceedToPaymentInstructions() {
+            // Validate inputs
+            let isValid = true;
+            
+            if (selectedPaymentMethod === 'wallet') {
+                const walletNumber = document.getElementById('wallet-number').value.trim();
+                const walletEmail = document.getElementById('wallet-email').value.trim();
+                
+                if (!walletNumber || !walletEmail) {
+                    showError('يرجى ملء جميع الحقول');
+                    isValid = false;
+                }
+                
+                // Validate wallet number
+                const phoneRegex = /^01[0-9]{9}$/;
+                if (!phoneRegex.test(walletNumber)) {
+                    showError('رقم المحفظة غير صحيح. يجب أن يكون 11 رقم ويبدأ بـ 01');
+                    isValid = false;
+                }
+                
+                // Validate email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(walletEmail)) {
+                    showError('البريد الإلكتروني غير صحيح');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    userAccount = walletNumber;
+                    userEmail = walletEmail;
+                }
+            } else {
+                const paypalAccount = document.getElementById('paypal-account').value.trim();
+                const paypalEmail = document.getElementById('paypal-email').value.trim();
+                
+                if (!paypalAccount || !paypalEmail) {
+                    showError('يرجى ملء جميع الحقول');
+                    isValid = false;
+                }
+                
+                // Validate email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(paypalEmail)) {
+                    showError('البريد الإلكتروني غير صحيح');
+                    isValid = false;
+                }
+                
+                if (isValid) {
+                    userAccount = paypalAccount;
+                    userEmail = paypalEmail;
+                }
+            }
+            
+            if (!isValid) return;
+            
+            // Generate user identifier
+            userIdentifier = btoa(userEmail + '_' + currentBookId).replace(/=/g, '');
+            
+            // Show payment instructions
+            showSection('section-payment-instructions');
+            
+            // Update instructions based on payment method
             if (selectedPaymentMethod === 'wallet') {
                 document.getElementById('wallet-instructions').classList.remove('hidden');
                 document.getElementById('paypal-instructions').classList.add('hidden');
+                document.getElementById('from-number').textContent = userAccount;
+                document.getElementById('user-wallet-number').textContent = userAccount;
             } else {
                 document.getElementById('wallet-instructions').classList.add('hidden');
                 document.getElementById('paypal-instructions').classList.remove('hidden');
@@ -834,7 +1088,7 @@
         // Start Countdown Timer
         function startCountdown() {
             const countdownElement = document.getElementById('countdown');
-            timeLeft = 15 * 60; // Reset to 15 minutes
+            timeLeft = 15 * 60;
             
             if (countdownInterval) {
                 clearInterval(countdownInterval);
@@ -853,9 +1107,7 @@
                     clearInterval(countdownInterval);
                     showError('انتهى وقت العملية!');
                     setTimeout(() => {
-                        if (document.getElementById('section-payment-details').classList.contains('visible-section')) {
-                            window.location.href = 'data.html';
-                        }
+                        window.location.href = 'data.html';
                     }, 3000);
                 }
             }, 1000);
@@ -880,10 +1132,8 @@
                     icon.className = 'fas fa-check';
                     btn.classList.add('copied');
                     
-                    // Show notification
                     showNotification('تم نسخ الرقم بنجاح', 'success');
                     
-                    // Reset after 2 seconds
                     setTimeout(() => {
                         icon.className = 'fas fa-copy';
                         btn.classList.remove('copied');
@@ -897,345 +1147,185 @@
 
         // Confirm Payment and Save Order
         function confirmPayment() {
-            if (!selectedPaymentMethod) {
-                showError('يرجى اختيار طريقة الدفع أولاً');
-                return;
-            }
+            showLoading(true);
             
-            // Generate unique order ID
-            orderId = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
-            currentOrderKey = `${userPhone}_${currentBookId}_${Date.now()}`;
+            // Generate order ID
+            orderId = 'ORD-' + Date.now();
+            orderKey = Date.now().toString();
             
             // Prepare order data
             const orderData = {
-                id: orderId,
+                email: userEmail,
+                state: "tdd", // Default state
+                paymentMethod: selectedPaymentMethod,
+                account: userAccount,
                 bookId: currentBookId,
                 bookName: currentBook.name || 'كتاب',
-                bookImage: currentBook.img1 || '',
-                bookDescription: currentBook.dec || '',
-                price: currentBookPrice,
-                customerName: customerName,
-                customerPhone: userPhone,
-                paymentMethod: selectedPaymentMethod,
-                paymentFrom: userPhone,
-                paymentTo: selectedPaymentMethod === 'wallet' ? '01009341792' : 'paypal.me/example',
-                status: 'pending',
+                bookPrice: currentBookPrice,
                 timestamp: firebase.database.ServerValue.TIMESTAMP,
                 timestampReadable: new Date().toLocaleString('ar-SA'),
-                attempts: 1,
-                downloadUrl: currentBook.downloadUrl || ''
+                orderId: orderId
             };
             
-            showLoading(true);
+            // Save to Firebase
+            const ordersRef = database.ref(`orders/${userIdentifier}/${orderKey}`);
             
-            // Save order to Firebase under user's phone number
-            const userOrdersRef = database.ref(`users/${userPhone}/orders/${currentOrderKey}`);
-            const allOrdersRef = database.ref(`allOrders/${currentOrderKey}`);
-            
-            // Save to both locations
-            Promise.all([
-                userOrdersRef.set(orderData),
-                allOrdersRef.set(orderData)
-            ])
-            .then(() => {
-                showLoading(false);
-                
-                // Stop countdown
-                if (countdownInterval) {
-                    clearInterval(countdownInterval);
-                }
-                
-                // Proceed to history section
-                showHistorySection();
-                
-                // Start monitoring order status
-                monitorOrderStatus();
-            })
-            .catch(error => {
-                showLoading(false);
-                showError('خطأ في حفظ الطلب. حاول مرة أخرى.');
-                console.error('Error saving order:', error);
-            });
-        }
-
-        // Show History Section
-        function showHistorySection() {
-            showSection('section-history');
-            
-            // Load order history
-            loadOrderHistory();
-            
-            // Update current order status
-            updateOrderStatusUI('pending');
-        }
-
-        // Load Order History
-        function loadOrderHistory() {
-            if (!userPhone) return;
-            
-            const userOrdersRef = database.ref(`users/${userPhone}/orders`);
-            
-            userOrdersRef.orderByChild('bookId').equalTo(currentBookId).once('value')
-                .then(snapshot => {
-                    const historyList = document.getElementById('history-list');
-                    historyList.innerHTML = '';
+            ordersRef.set(orderData)
+                .then(() => {
+                    showLoading(false);
                     
-                    if (snapshot.exists()) {
-                        const orders = snapshot.val();
-                        const orderKeys = Object.keys(orders);
-                        
-                        // Sort by timestamp (newest first)
-                        const sortedOrders = orderKeys.sort((a, b) => {
-                            return orders[b].timestamp - orders[a].timestamp;
-                        });
-                        
-                        sortedOrders.forEach(key => {
-                            const order = orders[key];
-                            addOrderToHistory(order);
-                        });
-                    } else {
-                        historyList.innerHTML = `
-                            <div class="text-center py-8 text-gray-500">
-                                <i class="fas fa-history text-3xl mb-3 opacity-30"></i>
-                                <p>لا توجد طلبات سابقة لهذا الكتاب</p>
-                            </div>
-                        `;
+                    // Stop countdown
+                    if (countdownInterval) {
+                        clearInterval(countdownInterval);
                     }
+                    
+                    // Show order status section
+                    showOrderStatusSection();
+                    
+                    // Start monitoring order status
+                    monitorOrderStatus();
                 })
                 .catch(error => {
-                    console.error('Error loading order history:', error);
+                    showLoading(false);
+                    showError('خطأ في حفظ الطلب');
+                    console.error('Error saving order:', error);
                 });
         }
 
-        // Add Order to History List
-        function addOrderToHistory(order) {
-            const historyList = document.getElementById('history-list');
+        // Show Order Status Section
+        function showOrderStatusSection() {
+            showSection('section-order-status');
             
-            // Status badge
-            let statusBadge = '';
-            let statusClass = '';
-            let statusText = '';
+            // Update UI with order details
+            document.getElementById('status-order-id').textContent = orderId;
+            document.getElementById('status-email').textContent = userEmail;
+            document.getElementById('status-payment-method').textContent = 
+                selectedPaymentMethod === 'wallet' ? 'محفظة إلكترونية' : 'PayPal';
+            document.getElementById('status-date').textContent = new Date().toLocaleString('ar-SA');
             
-            switch(order.status) {
-                case 'pending':
-                    statusBadge = '<span class="px-2 py-1 bg-yellow-900/30 text-yellow-400 rounded text-xs">قيد المراجعة</span>';
-                    statusClass = 'pending';
-                    statusText = 'قيد المراجعة';
-                    break;
-                case 'approved':
-                    statusBadge = '<span class="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">مقبول</span>';
-                    statusClass = 'approved';
-                    statusText = 'مقبول';
-                    break;
-                case 'rejected':
-                    statusBadge = '<span class="px-2 py-1 bg-red-900/30 text-red-400 rounded text-xs">مرفوض</span>';
-                    statusClass = 'rejected';
-                    statusText = 'مرفوض';
-                    break;
-            }
-            
-            const orderDate = order.timestampReadable || new Date(order.timestamp).toLocaleString('ar-SA');
-            
-            const orderHtml = `
-                <div class="history-card ${statusClass}">
-                    <div class="flex justify-between items-start mb-2">
-                        <div>
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="font-bold">${order.id}</span>
-                                ${statusBadge}
-                            </div>
-                            <p class="text-sm text-gray-400">${orderDate}</p>
-                        </div>
-                        <span class="font-bold text-blue-400">${formatPrice(order.price)}</span>
-                    </div>
-                    
-                    <div class="text-sm text-gray-400 mb-2">
-                        <div class="flex items-center gap-1">
-                            <i class="fas fa-${order.paymentMethod === 'wallet' ? 'wallet' : 'paypal'}"></i>
-                            <span>طريقة الدفع: ${order.paymentMethod === 'wallet' ? 'محفظة إلكترونية' : 'PayPal'}</span>
-                        </div>
-                    </div>
-                    
-                    ${order.status === 'approved' && order.downloadUrl ? `
-                        <a href="${order.downloadUrl}" target="_blank" 
-                           class="block w-full py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 rounded-lg text-center text-sm mt-2 transition-all">
-                            <i class="fas fa-download mr-1"></i>
-                            رابط التحميل
-                        </a>
-                    ` : ''}
-                </div>
-            `;
-            
-            historyList.insertAdjacentHTML('afterbegin', orderHtml);
+            // Load statistics
+            loadStatistics();
         }
 
         // Monitor Order Status Changes
         function monitorOrderStatus() {
-            if (!userPhone || !currentOrderKey) return;
+            if (!userIdentifier || !orderKey) return;
             
-            const orderRef = database.ref(`users/${userPhone}/orders/${currentOrderKey}`);
+            const orderRef = database.ref(`orders/${userIdentifier}/${orderKey}/state`);
             
             orderRef.on('value', (snapshot) => {
                 if (snapshot.exists()) {
-                    const order = snapshot.val();
-                    updateOrderStatusUI(order.status);
-                    
-                    // Update history list
-                    loadOrderHistory();
-                    
-                    // If approved, show download button
-                    if (order.status === 'approved') {
-                        showDownloadButton(order.downloadUrl);
-                    }
+                    const state = snapshot.val();
+                    handleOrderStateChange(state);
                 }
             });
         }
 
-        // Update Order Status UI
-        function updateOrderStatusUI(status) {
-            const statusIcon = document.getElementById('status-icon');
-            const statusTitle = document.getElementById('status-title');
-            const statusMessage = document.getElementById('status-message');
-            const currentStatusBadge = document.getElementById('current-status-badge');
-            const actionButtons = document.getElementById('action-buttons');
+        // Handle Order State Change
+        function handleOrderStateChange(state) {
+            console.log('State changed to:', state);
             
-            // Clear action buttons
-            actionButtons.innerHTML = '';
+            // Update current status badge
+            const badge = document.getElementById('current-status-badge');
             
-            switch(status) {
-                case 'pending':
-                    statusIcon.className = 'w-20 h-20 bg-yellow-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-yellow-500/30';
-                    statusIcon.innerHTML = '<i class="fas fa-clock text-yellow-500 text-3xl"></i>';
-                    statusTitle.textContent = 'جاري مراجعة الدفع';
-                    statusMessage.textContent = 'يتم حالياً مراجعة عملية الدفع الخاصة بك. سيتم إعلامك فور اكتمال المراجعة.';
-                    
-                    currentStatusBadge.innerHTML = '<span class="status-badge status-pending"><i class="fas fa-clock"></i> قيد المراجعة</span>';
-                    
-                    actionButtons.innerHTML = `
-                        <button onclick="refreshStatus()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
-                            <i class="fas fa-sync-alt mr-2"></i>
-                            تحديث الحالة
-                        </button>
-                        <button onclick="window.location.href='data.html'" class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all">
-                            العودة إلى المكتبة
-                        </button>
-                    `;
+            switch(state) {
+                case 'tdd':
+                    badge.innerHTML = '<span class="status-badge status-tdd"><i class="fas fa-clock"></i> قيد المراجعة (tdd)</span>';
+                    document.getElementById('status-title').textContent = 'جاري المراجعة';
+                    document.getElementById('status-message').textContent = 'يتم حالياً مراجعة عملية الدفع الخاصة بك';
                     break;
                     
-                case 'approved':
-                    statusIcon.className = 'w-20 h-20 bg-green-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-green-500/30';
-                    statusIcon.innerHTML = '<i class="fas fa-check-circle text-green-500 text-3xl"></i>';
-                    statusTitle.textContent = 'تمت الموافقة بنجاح!';
-                    statusMessage.textContent = 'تمت الموافقة على طلبك واكتملت عملية الشراء بنجاح.';
+                case 'ok':
+                    badge.innerHTML = '<span class="status-badge status-ok"><i class="fas fa-check-circle"></i> نجاح (ok)</span>';
+                    document.getElementById('status-title').textContent = 'تمت الموافقة';
+                    document.getElementById('status-message').textContent = 'تمت الموافقة على عملية الدفع بنجاح';
                     
-                    currentStatusBadge.innerHTML = '<span class="status-badge status-approved"><i class="fas fa-check-circle"></i> تمت الموافقة</span>';
-                    
-                    actionButtons.innerHTML = `
-                        <button onclick="window.location.href='data.html'" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all">
-                            <i class="fas fa-book mr-2"></i>
-                            تصفح المزيد من الكتب
-                        </button>
-                    `;
+                    // Show download section after delay
+                    setTimeout(() => {
+                        showDownloadSection();
+                    }, 2000);
                     break;
                     
-                case 'rejected':
-                    statusIcon.className = 'w-20 h-20 bg-red-600/20 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-red-500/30';
-                    statusIcon.innerHTML = '<i class="fas fa-times-circle text-red-500 text-3xl"></i>';
-                    statusTitle.textContent = 'تم رفض الطلب';
-                    statusMessage.textContent = 'عذراً، لم يتم التحقق من عملية الدفع. يرجى المحاولة مرة أخرى.';
+                case 'no':
+                    badge.innerHTML = '<span class="status-badge status-no"><i class="fas fa-times-circle"></i> فشل (no)</span>';
+                    document.getElementById('status-title').textContent = 'تم الرفض';
+                    document.getElementById('status-message').textContent = 'عذراً، تم رفض عملية الدفع';
                     
-                    currentStatusBadge.innerHTML = '<span class="status-badge status-rejected"><i class="fas fa-times-circle"></i> مرفوض</span>';
-                    
-                    actionButtons.innerHTML = `
-                        <button onclick="retryPayment()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all">
-                            <i class="fas fa-redo-alt mr-2"></i>
-                            إعادة المحاولة
-                        </button>
-                        <button onclick="window.location.href='data.html'" class="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl font-bold transition-all">
-                            العودة إلى المكتبة
-                        </button>
-                    `;
+                    // Show retry section after delay
+                    setTimeout(() => {
+                        showRetrySection();
+                    }, 2000);
                     break;
+            }
+            
+            // Update statistics
+            loadStatistics();
+        }
+
+        // Show Download Section
+        function showDownloadSection() {
+            showSection('section-download');
+            
+            // Set download link
+            const downloadLink = document.getElementById('download-link');
+            if (currentBook.download) {
+                downloadLink.href = currentBook.download;
+            } else {
+                downloadLink.href = '#';
+                downloadLink.onclick = () => {
+                    showError('رابط التحميل غير متوفر حالياً');
+                    return false;
+                };
             }
         }
 
-        // Show Download Button
-        function showDownloadButton(downloadUrl) {
-            const downloadContainer = document.getElementById('download-container');
-            const downloadLink = document.getElementById('download-link');
-            
-            if (downloadUrl) {
-                downloadLink.href = downloadUrl;
-            } else {
-                // Get download link from books collection
-                const bookRef = database.ref(`books/${currentBookId}`);
-                bookRef.once('value')
-                    .then(snapshot => {
-                        const book = snapshot.val();
-                        if (book && book.downloadUrl) {
-                            downloadLink.href = book.downloadUrl;
-                        } else {
-                            // Default download link
-                            downloadLink.href = '#';
-                            downloadLink.onclick = () => {
-                                showNotification('رابط التحميل غير متوفر حالياً', 'error');
-                                return false;
-                            };
-                        }
-                    });
-            }
-            
-            downloadContainer.classList.remove('hidden');
+        // Show Retry Section
+        function showRetrySection() {
+            showSection('section-retry');
         }
 
         // Check Existing Orders
         function checkExistingOrders() {
-            // Check localStorage for phone number
-            const savedPhone = localStorage.getItem('eshop_user_phone');
+            // Try to get from localStorage
+            const savedEmail = localStorage.getItem('eshop_user_email');
+            const savedBookId = localStorage.getItem('eshop_current_book');
             
-            if (savedPhone && currentBookId) {
-                userPhone = savedPhone;
-                customerName = localStorage.getItem('eshop_user_name') || '';
+            if (savedEmail && savedBookId === currentBookId) {
+                // Generate identifier
+                userIdentifier = btoa(savedEmail + '_' + currentBookId).replace(/=/g, '');
                 
-                // Pre-fill form
-                document.getElementById('customer-name').value = customerName;
-                document.getElementById('customer-phone').value = savedPhone;
+                // Check for orders
+                const ordersRef = database.ref(`orders/${userIdentifier}`);
                 
-                // Check if there are existing orders for this book
-                const userOrdersRef = database.ref(`users/${savedPhone}/orders`);
-                
-                userOrdersRef.orderByChild('bookId').equalTo(currentBookId).once('value')
+                ordersRef.orderByChild('timestamp').limitToLast(1).once('value')
                     .then(snapshot => {
                         if (snapshot.exists()) {
-                            // Go directly to history section
-                            showSection('section-history');
-                            loadOrderHistory();
-                            
-                            // Find the most recent order
                             const orders = snapshot.val();
-                            let latestOrder = null;
-                            let latestKey = null;
+                            const orderKeys = Object.keys(orders);
                             
-                            Object.keys(orders).forEach(key => {
-                                if (!latestOrder || orders[key].timestamp > latestOrder.timestamp) {
-                                    latestOrder = orders[key];
-                                    latestKey = key;
+                            if (orderKeys.length > 0) {
+                                const latestKey = orderKeys[0];
+                                const latestOrder = orders[latestKey];
+                                
+                                // Set global variables
+                                userEmail = latestOrder.email;
+                                orderKey = latestKey;
+                                orderId = latestOrder.orderId;
+                                selectedPaymentMethod = latestOrder.paymentMethod;
+                                userAccount = latestOrder.account;
+                                
+                                // Show appropriate section based on state
+                                if (latestOrder.state === 'ok') {
+                                    showDownloadSection();
+                                } else if (latestOrder.state === 'no') {
+                                    showRetrySection();
+                                } else {
+                                    showOrderStatusSection();
+                                    monitorOrderStatus();
                                 }
-                            });
-                            
-                            if (latestOrder) {
-                                currentOrderKey = latestKey;
                                 
-                                // Update current status
-                                updateOrderStatusUI(latestOrder.status);
-                                
-                                // If approved, show download button
-                                if (latestOrder.status === 'approved') {
-                                    showDownloadButton(latestOrder.downloadUrl);
-                                }
-                                
-                                // Start monitoring
-                                monitorOrderStatus();
+                                // Load statistics
+                                loadStatistics();
                             }
                         }
                     })
@@ -1245,25 +1335,145 @@
             }
         }
 
-        // Retry Payment
-        function retryPayment() {
-            // Go back to payment method selection
-            showSection('section-payment-method');
+        // Load Statistics
+        function loadStatistics() {
+            if (!userIdentifier) return;
+            
+            const ordersRef = database.ref(`orders/${userIdentifier}`);
+            
+            ordersRef.once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const orders = snapshot.val();
+                        let total = 0;
+                        let okCount = 0;
+                        let noCount = 0;
+                        
+                        Object.values(orders).forEach(order => {
+                            total++;
+                            if (order.state === 'ok') okCount++;
+                            if (order.state === 'no') noCount++;
+                        });
+                        
+                        // Update statistics
+                        document.getElementById('total-purchases').textContent = total;
+                        document.getElementById('successful-purchases').textContent = okCount;
+                        document.getElementById('failed-purchases').textContent = noCount;
+                        
+                        // Update history statistics
+                        document.getElementById('history-total').textContent = total;
+                        document.getElementById('history-ok').textContent = okCount;
+                        document.getElementById('history-no').textContent = noCount;
+                    } else {
+                        document.getElementById('total-purchases').textContent = '0';
+                        document.getElementById('successful-purchases').textContent = '0';
+                        document.getElementById('failed-purchases').textContent = '0';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading statistics:', error);
+                });
         }
 
-        // Refresh Status
-        function refreshStatus() {
-            showLoading(true);
+        // Load Purchase History
+        function loadPurchaseHistory() {
+            if (!userIdentifier) return;
             
-            // Simulate checking
-            setTimeout(() => {
-                showLoading(false);
-                showNotification('لا توجد تحديثات جديدة', 'info');
-            }, 1500);
+            const ordersRef = database.ref(`orders/${userIdentifier}`);
+            
+            ordersRef.once('value')
+                .then(snapshot => {
+                    const historyList = document.getElementById('history-list');
+                    historyList.innerHTML = '';
+                    
+                    if (snapshot.exists()) {
+                        const orders = snapshot.val();
+                        
+                        // Convert to array and sort by timestamp
+                        const ordersArray = Object.entries(orders).map(([key, order]) => ({
+                            key,
+                            ...order
+                        }));
+                        
+                        ordersArray.sort((a, b) => b.timestamp - a.timestamp);
+                        
+                        // Add to history list
+                        ordersArray.forEach(order => {
+                            addToHistoryList(order);
+                        });
+                    } else {
+                        historyList.innerHTML = `
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-history text-3xl mb-3 opacity-30"></i>
+                                <p>لا توجد عمليات شراء سابقة</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading purchase history:', error);
+                });
+        }
+
+        // Add to History List
+        function addToHistoryList(order) {
+            const historyList = document.getElementById('history-list');
+            
+            let statusBadge = '';
+            let statusClass = '';
+            
+            switch(order.state) {
+                case 'tdd':
+                    statusBadge = '<span class="px-2 py-1 bg-yellow-900/30 text-yellow-400 rounded text-xs">قيد المراجعة</span>';
+                    statusClass = 'tdd';
+                    break;
+                case 'ok':
+                    statusBadge = '<span class="px-2 py-1 bg-green-900/30 text-green-400 rounded text-xs">نجاح</span>';
+                    statusClass = 'ok';
+                    break;
+                case 'no':
+                    statusBadge = '<span class="px-2 py-1 bg-red-900/30 text-red-400 rounded text-xs">فشل</span>';
+                    statusClass = 'no';
+                    break;
+            }
+            
+            const orderHtml = `
+                <div class="history-card ${statusClass}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="font-bold">${order.orderId}</span>
+                                ${statusBadge}
+                            </div>
+                            <p class="text-sm text-gray-400">${order.timestampReadable || new Date(order.timestamp).toLocaleString('ar-SA')}</p>
+                        </div>
+                        <span class="font-bold text-blue-400">${formatPrice(order.bookPrice)}</span>
+                    </div>
+                    
+                    <div class="text-sm text-gray-400">
+                        <div class="flex items-center gap-1 mb-1">
+                            <i class="fas fa-${order.paymentMethod === 'wallet' ? 'wallet' : 'paypal'}"></i>
+                            <span>${order.paymentMethod === 'wallet' ? 'محفظة إلكترونية' : 'PayPal'}</span>
+                        </div>
+                        <div class="truncate">
+                            <i class="fas fa-envelope"></i>
+                            <span>${order.email}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            historyList.insertAdjacentHTML('beforeend', orderHtml);
         }
 
         // Navigation Functions
         function showSection(sectionId) {
+            // Save to localStorage
+            if (userEmail) {
+                localStorage.setItem('eshop_user_email', userEmail);
+                localStorage.setItem('eshop_current_book', currentBookId);
+            }
+            
             // Hide all sections
             document.querySelectorAll('section').forEach(section => {
                 section.classList.remove('visible-section');
@@ -1279,31 +1489,39 @@
             window.scrollTo(0, 0);
         }
 
-        function backToInfoSection() {
-            showSection('section-info');
-        }
-
         function backToPaymentMethod() {
             showSection('section-payment-method');
         }
 
-        // Local Storage Functions
-        function saveToLocalStorage() {
-            localStorage.setItem('eshop_user_name', customerName);
-            localStorage.setItem('eshop_user_phone', userPhone);
+        function backToPaymentInfo() {
+            showSection('section-payment-info');
         }
 
-        function loadFromLocalStorage() {
-            const savedName = localStorage.getItem('eshop_user_name');
-            const savedPhone = localStorage.getItem('eshop_user_phone');
+        function backToStatus() {
+            showSection('section-order-status');
+        }
+
+        // Action Functions
+        function checkOrderStatus() {
+            showLoading(true);
             
-            if (savedName) {
-                document.getElementById('customer-name').value = savedName;
-            }
-            
-            if (savedPhone) {
-                document.getElementById('customer-phone').value = savedPhone;
-            }
+            setTimeout(() => {
+                showLoading(false);
+                showNotification('جارٍ التحقق من حالة الطلب...', 'info');
+            }, 1000);
+        }
+
+        function retryPurchase() {
+            // Reset and start over
+            selectedPaymentMethod = null;
+            userEmail = null;
+            userAccount = null;
+            showSection('section-payment-method');
+        }
+
+        function viewPurchaseHistory() {
+            showSection('section-history');
+            loadPurchaseHistory();
         }
 
         // Helper Functions
@@ -1319,15 +1537,9 @@
             overlay.classList.toggle('hidden', !show);
         }
 
-        function showError(message) {
-            showNotification(message, 'error');
-        }
-
         function showNotification(message, type = 'info') {
-            // Remove existing notifications
             document.querySelectorAll('.notification').forEach(n => n.remove());
             
-            // Create new notification
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
@@ -1345,7 +1557,6 @@
             
             document.body.appendChild(notification);
             
-            // Auto remove after 5 seconds
             setTimeout(() => {
                 if (notification.parentElement) {
                     notification.classList.add('fade-out');
@@ -1356,6 +1567,10 @@
                     }, 300);
                 }
             }, 5000);
+        }
+
+        function showError(message) {
+            showNotification(message, 'error');
         }
     </script>
 </body>
